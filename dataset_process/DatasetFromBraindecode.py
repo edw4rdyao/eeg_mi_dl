@@ -14,10 +14,18 @@ def _load_bci2a_braindecode(subject_ids):
     return dataset_instance, dataset_description
 
 
+def _load_physionet_braindecode(subject_ids):
+    dataset_description = "Physionet MI dataset: https://physionet.org/pn4/eegmmidb/"
+    dataset_instance = MOABBDataset(dataset_name="PhysionetMI", subject_ids=subject_ids)
+    return dataset_instance, dataset_description
+
+
 class DatasetFromBraindecode:
     def __init__(self, dataset_name, subject_ids):
         if dataset_name == 'bci2a':
             self.dataset_instance, self.dataset_description = _load_bci2a_braindecode(subject_ids)
+        elif dataset_name == 'physionet':
+            self.dataset_instance, self.dataset_description = _load_physionet_braindecode(subject_ids)
         else:
             raise ValueError(
                 "dataset:%s is not supported" % dataset_name
@@ -33,9 +41,10 @@ class DatasetFromBraindecode:
         ]
         preprocess(self.dataset_instance, preprocessors)
 
-    def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0):
+    def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0, mapping=None):
         # Extract sampling frequency, check that they are same in all datasets
         sfreq = self.dataset_instance.datasets[0].raw.info['sfreq']
+
         assert all([ds.raw.info['sfreq'] == sfreq for ds in self.dataset_instance.datasets])
         # Calculate the trial start offset in samples.
         trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)
@@ -47,5 +56,6 @@ class DatasetFromBraindecode:
             trial_start_offset_samples=trial_start_offset_samples,
             trial_stop_offset_samples=trial_stop_offset_samples,
             preload=True,
+            mapping=mapping,
         )
         return windows_dataset

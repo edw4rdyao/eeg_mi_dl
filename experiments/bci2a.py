@@ -84,7 +84,7 @@ def bci2a_shallow_conv_net():
         y_test = test_set.get_metadata().target
         test_acc = clf.score(test_set, y=y_test)
         print(f"Subject{subject} Test acc: {(test_acc * 100):.2f}%")
-        acc.append(round(test_acc, 3))
+        acc.append(round(test_acc, 5))
     print("ShallowConvNet within subject acc:", acc)
     print(f"Average acc:{np.mean(acc):.3f}")
     # KFold cross validation to adjust hyperparameters
