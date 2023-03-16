@@ -27,7 +27,7 @@ moabb.set_log_level("info")
 
 
 def _load_dataset():
-    dataset_bd = dataset_process.DatasetFromBraindecode('bci2a', subject_ids=[1])
+    dataset_bd = dataset_process.DatasetFromBraindecode('bci2a', subject_ids=None)
     dataset = dataset_bd.dataset_instance
     dataset_bd.preprocess_dataset()
     windows_dataset = dataset_bd.create_windows_dataset(trial_start_offset_seconds=-0.5)
@@ -76,7 +76,7 @@ def bci2a_shallow_conv_net():
     input_window_samples = windows_dataset[0][0].shape[1]
     sfreq = dataset.datasets[0].raw.info['sfreq']
     transforms = get_augmentation_transform(sample_freq=sfreq)
-    n_epochs = 2
+    n_epochs = 300
     param_grid = {
         "optimizer__lr": [0.006, 0.0006],
         "batch_size": [16, 64],
@@ -100,14 +100,14 @@ def bci2a_eeg_net():
     sfreq = dataset.datasets[0].raw.info['sfreq']
     transforms = get_augmentation_transform(sample_freq=sfreq)
     model = get_eeg_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples)
-    n_epochs = 4
+    n_epochs = 300
     param_grid = {
         "optimizer__lr": [0.001, 0.0005],
         "batch_size": [16, 64],
         "optimizer__weight_decay": [0],
         "max_epochs": [n_epochs]
     }
-    clf = EEGClassifier(model, iterator_train=AugmentedDataLoader, iterator_train__transforms=transforms,
+    clf = EEGClassifier(module=model, iterator_train=AugmentedDataLoader, iterator_train__transforms=transforms,
                         criterion=torch.nn.NLLLoss, optimizer=torch.optim.AdamW, train_split=None,
                         callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         device='cuda' if cuda else 'cpu'
