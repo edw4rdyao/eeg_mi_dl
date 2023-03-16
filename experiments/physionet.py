@@ -22,14 +22,13 @@ from utils import get_augmentation_transform
 from sklearn.model_selection import train_test_split
 from torch.utils.data import Subset
 from moabb.datasets import PhysionetMI
-
 moabb.set_log_level("info")
 
 
-def data_loader():
+def _load_dataset():
     dataset_bd = dataset_process.DatasetFromBraindecode('physionet', subject_ids=list(range(1, 21)))
     dataset = dataset_bd.dataset_instance
-    dataset_bd.preprocess_data()
+    dataset_bd.preprocess_dataset()
     windows_dataset = dataset_bd.create_windows_dataset(trial_start_offset_seconds=0,
                                                         trial_stop_offset_seconds=-1,
                                                         mapping={
@@ -42,10 +41,9 @@ def data_loader():
 
 
 def physionet_eeg_net():
-    dataset, windows_dataset = data_loader()
+    dataset, windows_dataset = _load_dataset()
     cuda = torch.cuda.is_available()
-    seed = 14381438
-    set_random_seeds(seed=seed, cuda=cuda)
+    set_random_seeds(seed=14381438, cuda=cuda)
     device = 'cuda' if cuda else 'cpu'
     n_channels = windows_dataset[0][0].shape[0]
     input_window_samples = windows_dataset[0][0].shape[1]
@@ -89,7 +87,7 @@ def physionet_eeg_net():
 
 
 def physionet_shallow_conv_net():
-    dataset, windows_dataset = data_loader()
+    dataset, windows_dataset = _load_dataset()
     cuda = torch.cuda.is_available()
     seed = 20202020
     set_random_seeds(seed=seed, cuda=cuda)

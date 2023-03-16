@@ -133,3 +133,5 @@ dmypy.json
 note.md
 
 /imgs
+
+*.txt

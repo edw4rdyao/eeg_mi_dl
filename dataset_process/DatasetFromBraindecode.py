@@ -31,7 +31,7 @@ class DatasetFromBraindecode:
                 "dataset:%s is not supported" % dataset_name
             )
 
-    def preprocess_data(self, low_flt_freq=4, high_flt_freq=38, factor_new=1e-3, init_block_size=1000, factor=1e6):
+    def preprocess_dataset(self, low_flt_freq=4, high_flt_freq=38, factor_new=1e-3, init_block_size=1000, factor=1e6):
         preprocessors = [
             Preprocessor('pick_types', eeg=True, meg=False, stim=False),
             Preprocessor(lambda data: multiply(data, factor)),
@@ -44,7 +44,6 @@ class DatasetFromBraindecode:
     def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0, mapping=None):
         # Extract sampling frequency, check that they are same in all datasets
         sfreq = self.dataset_instance.datasets[0].raw.info['sfreq']
-
         assert all([ds.raw.info['sfreq'] == sfreq for ds in self.dataset_instance.datasets])
         # Calculate the trial start offset in samples.
         trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)
