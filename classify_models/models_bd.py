@@ -3,9 +3,10 @@ import torch
 cuda = torch.cuda.is_available()
 
 
-def get_shallow_conv_net(n_channels, n_classes, input_window_samples, final_conv_length='auto'):
+def get_shallow_conv_net(n_channels, n_classes, input_window_samples, final_conv_length='auto',
+                         drop_prob=0.25):
     model = ShallowFBCSPNet(in_chans=n_channels, n_classes=n_classes, input_window_samples=input_window_samples,
-                            final_conv_length=final_conv_length)
+                            final_conv_length=final_conv_length, drop_prob=drop_prob)
     if cuda:
         model.cuda()
     return model

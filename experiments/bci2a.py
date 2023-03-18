@@ -69,7 +69,7 @@ def bci2a_shallow_conv_net():
     n_channels = dataset[0][0].shape[0]
     input_window_samples = 1000
     model = get_shallow_conv_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                                 final_conv_length=30)
+                                 final_conv_length=30, drop_prob=0.5)
     # for cropped training
     to_dense_prediction_model(model)
     n_preds_per_input = get_output_shape(model, n_channels, input_window_samples)[2]
@@ -78,7 +78,7 @@ def bci2a_shallow_conv_net():
                                                 window_stride_samples=n_preds_per_input)
     transforms = get_augmentation_transform(sample_freq=ds.get_sfreq())
     n_epochs = 500
-    lr = 0.0625 * 0.01
+    lr = 0.0006
     weight_decay = 0
     batch_size = 64
     clf = EEGClassifier(module=model,
