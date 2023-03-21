@@ -1,5 +1,6 @@
 from braindecode.models import ShallowFBCSPNet, EEGNetv4
 import torch
+from torchsummary import summary
 cuda = torch.cuda.is_available()
 
 
@@ -9,6 +10,7 @@ def get_shallow_conv_net(n_channels, n_classes, input_window_samples, final_conv
                             final_conv_length=final_conv_length, drop_prob=drop_prob)
     if cuda:
         model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     return model
 
 
@@ -18,4 +20,5 @@ def get_eeg_net(n_channels, n_classes, input_window_samples,
                      final_conv_length=final_conv_length, kernel_length=kernel_length, drop_prob=drop_prob)
     if cuda:
         model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     return model
