@@ -135,3 +135,9 @@ note.md
 /imgs
 
 *.txt
+
+test.py
+
+*_blocked.py
+
+playground.ipynb

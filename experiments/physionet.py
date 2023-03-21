@@ -1,4 +1,4 @@
-import dataset_process
+import dataset_loader
 from braindecode import EEGClassifier
 from braindecode.util import set_random_seeds
 from braindecode.models import ShallowFBCSPNet, EEGNetv4
@@ -26,17 +26,16 @@ moabb.set_log_level("info")
 
 
 def _load_dataset():
-    dataset_bd = dataset_process.DatasetFromBraindecode('physionet', subject_ids=list(range(1, 21)))
-    dataset = dataset_bd.dataset_instance
-    dataset_bd.preprocess_dataset()
-    windows_dataset = dataset_bd.create_windows_dataset(trial_start_offset_seconds=0,
-                                                        trial_stop_offset_seconds=-1,
-                                                        mapping={
-                                                            'left_hand': 0,
-                                                            'right_hand': 1,
-                                                            'hands': 2,
-                                                            'feet': 3
-                                                        })
+    ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=list(range(1, 21)))
+    dataset = ds.dataset_instance
+    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0,
+                                                trial_stop_offset_seconds=-1,
+                                                mapping={
+                                                    'left_hand': 0,
+                                                    'right_hand': 1,
+                                                    'hands': 2,
+                                                    'feet': 3
+                                                })
     return dataset, windows_dataset
 
 
