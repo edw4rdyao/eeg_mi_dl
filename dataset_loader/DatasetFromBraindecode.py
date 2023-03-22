@@ -1,5 +1,5 @@
 """
-Dataset from braindecode lib. https://braindecode.org/stable/index.html
+Dataset based on braindecode lib. https://braindecode.org/stable/index.html
 Encapsulate the operations
 """
 from braindecode.datasets import MOABBDataset
@@ -25,8 +25,8 @@ class DatasetFromBraindecode:
 
     """
     def __init__(self, dataset_name, subject_ids):
-        """
-        get dataset instance from braindecode lib
+        """get dataset instance from braindecode lib
+
         Parameters
         ----------
         dataset_name : str
@@ -46,20 +46,23 @@ class DatasetFromBraindecode:
             )
 
     def get_sample_freq(self):
-        """
+        """get the sample frequency of dataset
 
         Returns
         -------
-
+        sfreq: int
+            the sample frequency of raw dataset, which is got from
+            mne.io.Raw object of dataset
         """
         return self.raw_dataset.datasets[0].raw.info['sfreq']
 
     def get_channel_num(self):
-        """
+        """get channel nums of dataset
 
         Returns
         -------
-
+        n_channel: int
+            the channel num of dataset from raw dataset
         """
         return self.raw_dataset[0][0].shape[0]
 
@@ -68,6 +71,7 @@ class DatasetFromBraindecode:
 
         Returns
         -------
+        input_window_sample: int
 
         """
         if not self.windows_dataset:

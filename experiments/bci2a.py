@@ -57,13 +57,7 @@ def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
 def bci2a_shallow_conv_net():
     set_random_seeds(seed=20233202, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.raw_dataset, [
-        Preprocessor('pick_types', eeg=True, meg=False, stim=False),
-        Preprocessor(lambda data: multiply(data, 1e6)),
-        Preprocessor('filter', l_freq=4, h_freq=38),
-        Preprocessor(exponential_moving_standardize,
-                     factor_new=1e-3, init_block_size=1000)
-    ])
+    ds.preprocess_dataset(low_freq=4, high_freq=38)
     n_channels = ds.get_channel_num()
     input_window_samples = 1000
     model = get_shallow_conv_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
@@ -92,17 +86,10 @@ def bci2a_shallow_conv_net():
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.raw_dataset, [
-        Preprocessor('pick_types', eeg=True, meg=False, stim=False),
-        Preprocessor(lambda data: multiply(data, 1e6)),
-        # Preprocessor('resample', sfreq=128),
-        Preprocessor('filter', l_freq=4, h_freq=40),
-        Preprocessor(exponential_moving_standardize,
-                     factor_new=1e-3, init_block_size=1000)
-    ])
+    ds.preprocess_dataset(low_freq=4, high_freq=40)
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0.5, trial_stop_offset_seconds=-1.5)
     n_channels = ds.get_channel_num()
-    input_window_samples = windows_dataset[0][0].shape[1]
+    input_window_samples = ds.get_input_window_sample()
     model = get_eeg_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
                         kernel_length=64, drop_prob=0.5)
     n_epochs = 750
