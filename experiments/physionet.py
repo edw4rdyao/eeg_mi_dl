@@ -27,7 +27,7 @@ moabb.set_log_level("info")
 
 def _load_dataset():
     ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=list(range(1, 21)))
-    dataset = ds.dataset_instance
+    dataset = ds.raw_dataset
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0,
                                                 trial_stop_offset_seconds=-1,
                                                 mapping={

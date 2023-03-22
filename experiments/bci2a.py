@@ -57,7 +57,7 @@ def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
 def bci2a_shallow_conv_net():
     set_random_seeds(seed=20233202, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.dataset_instance, [
+    preprocess(ds.raw_dataset, [
         Preprocessor('pick_types', eeg=True, meg=False, stim=False),
         Preprocessor(lambda data: multiply(data, 1e6)),
         Preprocessor('filter', l_freq=4, h_freq=38),
@@ -92,7 +92,7 @@ def bci2a_shallow_conv_net():
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.dataset_instance, [
+    preprocess(ds.raw_dataset, [
         Preprocessor('pick_types', eeg=True, meg=False, stim=False),
         Preprocessor(lambda data: multiply(data, 1e6)),
         # Preprocessor('resample', sfreq=128),
