@@ -88,7 +88,7 @@ def bci2a_shallow_conv_net():
 
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[2])
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[1])
     ds.preprocess_dataset()
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()

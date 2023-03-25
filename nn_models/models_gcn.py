@@ -81,6 +81,13 @@ class Expression(nn.Module):
         )
 
 
+class Ensure4d(nn.Module):
+    def forward(self, x):
+        while len(x.shape) < 4:
+            x = x.unsqueeze(-1)
+        return x
+
+
 def _transpose_to_b_1_c_0(x):
     return x.permute(0, 3, 1, 2)
 
@@ -89,6 +96,7 @@ class EEGNetGCN(nn.Module):
     def _get_block_temporal_conv(self):
         block_temporal_conv = nn.Sequential(
             # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
+            Ensure4d(),
             Expression(_transpose_to_b_1_c_0),
             nn.Conv2d(1, self.F1, (1, self.kernel_length),
                       stride=1, bias=False, padding=(0, self.kernel_length // 2)),
@@ -103,7 +111,7 @@ class EEGNetGCN(nn.Module):
             Conv2dWithConstraint(self.F1, self.F1 * self.D, (self.n_channels, 1),
                                  max_norm=1, stride=1, bias=False, groups=self.F1, padding=(0, 0)),
             nn.BatchNorm2d(self.F1 * self.D, momentum=0.01, affine=True, eps=1e-3),
-            Expression(elu),
+            nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             nn.Dropout(p=self.drop_p)
             # output shape: (B, F1 * D, 1, T//4)(64, 16, 1, 1000 // 4)
@@ -118,7 +126,7 @@ class EEGNetGCN(nn.Module):
             nn.Conv2d(self.F1 * self.D, self.F2, (1, 1),
                       stride=1, bias=False, padding=(0, 0)),
             nn.BatchNorm2d(self.F2, momentum=0.01, affine=True, eps=1e-3),
-            Expression(elu),
+            nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
             nn.Dropout(p=self.drop_p),
             # output shape: (B, F2, 1, T//32)   (64, 16, 1, 1000//4//8)
@@ -136,6 +144,19 @@ class EEGNetGCN(nn.Module):
         )
         return block_classifier
 
+    def _get_net(self):
+        block_conv = nn.Sequential(
+            self._get_block_temporal_conv(),
+            self._get_block_spacial_conv(),
+            self._get_block_separable_conv()
+        )
+        out = block_conv(torch.ones((1, self.n_channels, self.input_windows_size, 1), dtype=torch.float32))
+        block_classifier = self._get_block_classifier(out.cpu().data.numpy().shape[1])
+        return nn.Sequential(
+            block_conv,
+            block_classifier
+        )
+
     def __init__(self, n_channels, n_classes, input_window_size,
                  F1=8, D=2, F2=16, kernel_length=64, drop_p=0.25):
         super(EEGNetGCN, self).__init__()
@@ -147,19 +168,9 @@ class EEGNetGCN(nn.Module):
         self.kernel_length = kernel_length
         self.drop_p = drop_p
         self.input_windows_size = input_window_size
-        self.block_conv = nn.Sequential(
-            self._get_block_temporal_conv(),
-            self._get_block_spacial_conv(),
-            self._get_block_separable_conv()
-        )
-        out = self.block_conv(torch.ones(
-            (1, self.n_channels, self.input_windows_size, 1), dtype=torch.float32
-        ))
-        self.block_classifier = self._get_block_classifier(out.cpu().data.numpy().shape[1])
-        _init_weight_bias(self.block_conv)
-        _init_weight_bias(self.block_classifier)
+        self.net = self._get_net()
+        _init_weight_bias(self.net)
 
     def forward(self, x):
-        x = self.block_conv(x)
-        x = self.block_classifier(x)
+        x = self.net(x)
         return x
