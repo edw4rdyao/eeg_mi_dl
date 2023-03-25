@@ -1,31 +1,10 @@
 import numpy as np
 import torch
 from torch import nn
-from torch.nn.functional import elu
-
-
-def _init_weight_bias(model):
-    """Initialize parameters of all modules by initializing weights 1
-     uniform/xavier initialization, and setting biases to zero. Weights from
-     batch norm layers are set to 1.
-
-    Parameters
-    ----------
-    model: Module
-    """
-    for module in model.modules():
-        if hasattr(module, "weight"):
-            if not ("BatchNorm" in module.__class__.__name__):
-                nn.init.xavier_uniform_(module.weight, gain=1)
-            else:
-                nn.init.constant_(module.weight, 1)
-        if hasattr(module, "bias"):
-            if module.bias is not None:
-                nn.init.constant_(module.bias, 0)
 
 
 class Conv2dWithConstraint(nn.Conv2d):
-    """
+    """Convolution 2d with max norm
 
     References
     ----------
@@ -82,22 +61,25 @@ class Expression(nn.Module):
 
 
 class Ensure4d(nn.Module):
+    """Ensure the input shape to be 4D
+
+    References
+    ----------
+    braindecode.model
+    """
+
     def forward(self, x):
         while len(x.shape) < 4:
             x = x.unsqueeze(-1)
         return x
 
 
-def _transpose_to_b_1_c_0(x):
-    return x.permute(0, 3, 1, 2)
-
-
-class EEGNetGCN(nn.Module):
+class EEGNetMine(nn.Module):
     def _get_block_temporal_conv(self):
         block_temporal_conv = nn.Sequential(
-            # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             Ensure4d(),
             Expression(_transpose_to_b_1_c_0),
+            # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             nn.Conv2d(1, self.F1, (1, self.kernel_length),
                       stride=1, bias=False, padding=(0, self.kernel_length // 2)),
             nn.BatchNorm2d(self.F1, momentum=0.01, affine=True, eps=1e-3)
@@ -159,7 +141,7 @@ class EEGNetGCN(nn.Module):
 
     def __init__(self, n_channels, n_classes, input_window_size,
                  F1=8, D=2, F2=16, kernel_length=64, drop_p=0.25):
-        super(EEGNetGCN, self).__init__()
+        super(EEGNetMine, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.F1 = F1
@@ -174,3 +156,56 @@ class EEGNetGCN(nn.Module):
     def forward(self, x):
         x = self.net(x)
         return x
+
+
+class ConvGcn(nn.Module):
+    def _get_block_conv(self):
+        block_conv = nn.Sequential(
+            Ensure4d(),
+            Expression(_transpose_to_b_1_c_0),
+            # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
+            nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
+            nn.AvgPool2d(kernel_size=(1, 2), stride=(1, 2)),
+            nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
+            nn.AvgPool2d(kernel_size=(1, 2), stride=(1, 2))
+            # output shape: (B, C, E, T//4)(64, 1, 22, 1000//4)
+        )
+        return block_conv
+
+    def _get_block_gcn(self):
+        block_gcn = nn.Sequential()
+
+
+def _transpose_to_b_1_c_0(x):
+    """transform the dimension
+
+    Parameters
+    ----------
+    x: torch.Tensor
+        input data
+
+    Returns
+    -------
+    x.permute(0, 3, 1, 2)
+    """
+    return x.permute(0, 3, 1, 2)
+
+
+def _init_weight_bias(model):
+    """Initialize parameters of all modules by initializing weights 1
+     uniform/xavier initialization, and setting biases to zero. Weights from
+     batch norm layers are set to 1.
+
+    Parameters
+    ----------
+    model: nn.Module
+    """
+    for module in model.modules():
+        if hasattr(module, "weight"):
+            if not ("BatchNorm" in module.__class__.__name__):
+                nn.init.xavier_uniform_(module.weight, gain=1)
+            else:
+                nn.init.constant_(module.weight, 1)
+        if hasattr(module, "bias"):
+            if module.bias is not None:
+                nn.init.constant_(module.bias, 0)

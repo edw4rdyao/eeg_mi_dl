@@ -1,7 +1,7 @@
 from braindecode.models import ShallowFBCSPNet, EEGNetv4
 import torch
 from torchsummary import summary
-from .models_gcn import EEGNetGCN
+from .models_gcn import EEGNetMine
 cuda = torch.cuda.is_available()
 
 
@@ -27,8 +27,8 @@ def get_eeg_net(n_channels, n_classes, input_window_samples,
 
 def get_eeg_net_gcn(n_channels, n_classes, input_window_samples,
                     kernel_length=64, drop_prob=0.25):
-    model = EEGNetGCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                      kernel_length=kernel_length, drop_p=drop_prob)
+    model = EEGNetMine(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
+                       kernel_length=kernel_length, drop_p=drop_prob)
     if cuda:
         model.cuda()
     summary(model, (n_channels, input_window_samples, 1))
