@@ -1,4 +1,5 @@
 from braindecode.augmentation import SignFlip, FrequencyShift
+import torch
 
 
 def get_augmentation_transform(sample_freq):
@@ -13,3 +14,10 @@ def get_augmentation_transform(sample_freq):
         sign_flip
     ]
     return transforms
+
+
+def get_adjacency_matrix(n_electrodes, mode):
+    adj = torch.zeros(n_electrodes, n_electrodes)
+    if mode == 'full':
+        adj = torch.ones(n_electrodes, n_electrodes)
+    return adj

@@ -158,6 +158,29 @@ class EEGNetMine(nn.Module):
         return x
 
 
+class GraphConvolution(nn.Module):
+    def __init__(self, adjacency_matrix, in_channels, out_channels, bias=True):
+        super(GraphConvolution, self).__init__()
+        self.in_channels = in_channels
+        self.out_channels = out_channels
+        self.adj = adjacency_matrix
+        self.weight = nn.Parameter(torch.randn(self.in_channels, self.out_channels))
+        if bias:
+            self.bias = nn.Parameter(torch.randn(out_channels))
+        else:
+            self.register_parameter('bias', None)
+        _init_weight_bias(self)
+
+    def forward(self, x):
+        x = torch.mul(torch.mul(self.adj, x), self.weight)
+        if self.bias:
+            x += self.bias
+        return x
+
+    def __repr__(self):
+        return f"{self.__class__.__name__}({self.in_channels}->{self.out_channels})"
+
+
 class ConvGcn(nn.Module):
     def _get_block_conv(self):
         block_conv = nn.Sequential(
@@ -172,8 +195,12 @@ class ConvGcn(nn.Module):
         )
         return block_conv
 
-    def _get_block_gcn(self):
-        block_gcn = nn.Sequential()
+    def _get_block_gcn(self, in_channels, out_channels):
+
+        block_gcn = GraphConvolution(adjacency_matrix, in_channels, out_channels)
+
+    def __init__(self):
+        super(ConvGcn, self).__init__()
 
 
 def _transpose_to_b_1_c_0(x):
