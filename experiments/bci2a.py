@@ -28,6 +28,7 @@ import time
 from datetime import datetime
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
+from torchsummary import summary
 
 moabb.set_log_level("info")
 
@@ -62,9 +63,11 @@ def bci2a_shallow_conv_net():
     ds.preprocess_dataset(low_freq=4, high_freq=38)
     n_channels = ds.get_channel_num()
     input_window_samples = 1000
-    model = nn_models.get_shallow_conv_net(n_channels=n_channels, n_classes=4,
-                                           input_window_samples=input_window_samples,
-                                           final_conv_length=30, drop_prob=0.25)
+    model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+                                      final_conv_length=30, drop_prob=0.25)
+    if cuda:
+        model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     # for cropped training
     to_dense_prediction_model(model)
     n_preds_per_input = get_output_shape(model, n_channels, input_window_samples)[2]
@@ -88,15 +91,19 @@ def bci2a_shallow_conv_net():
 
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[1])
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[2])
     ds.preprocess_dataset()
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
-    # model = nn_models.get_eeg_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                               kernel_length=64, drop_prob=0.5)
-    model = nn_models.get_eeg_net_gcn(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                                      kernel_length=64, drop_prob=0.5)
+    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+    #                            kernel_length=32)
+    # model = nn_models.EEGConvGcn(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples)
+    model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                 kernel_length=32)
+    if cuda:
+        model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     n_epochs = 750
     lr = 0.001
     weight_decay = 0
