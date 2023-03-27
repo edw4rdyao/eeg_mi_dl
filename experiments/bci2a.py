@@ -18,7 +18,8 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.svm import SVC
 from sklearn.pipeline import make_pipeline
 from utils import get_augmentation_transform
-from nn_models import cuda, get_eeg_net, get_shallow_conv_net
+import nn_models
+from nn_models import cuda
 import pandas as pd
 from sklearn.model_selection import GridSearchCV
 from braindecode.preprocessing import exponential_moving_standardize, preprocess, Preprocessor
@@ -27,6 +28,8 @@ import time
 from datetime import datetime
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
+from torchsummary import summary
+
 moabb.set_log_level("info")
 
 
@@ -57,17 +60,14 @@ def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
 def bci2a_shallow_conv_net():
     set_random_seeds(seed=20233202, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.dataset_instance, [
-        Preprocessor('pick_types', eeg=True, meg=False, stim=False),
-        Preprocessor(lambda data: multiply(data, 1e6)),
-        Preprocessor('filter', l_freq=4, h_freq=38),
-        Preprocessor(exponential_moving_standardize,
-                     factor_new=1e-3, init_block_size=1000)
-    ])
+    ds.preprocess_dataset(low_freq=4, high_freq=38)
     n_channels = ds.get_channel_num()
     input_window_samples = 1000
-    model = get_shallow_conv_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                                 final_conv_length=30, drop_prob=0.25)
+    model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+                                      final_conv_length=30, drop_prob=0.25)
+    if cuda:
+        model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     # for cropped training
     to_dense_prediction_model(model)
     n_preds_per_input = get_output_shape(model, n_channels, input_window_samples)[2]
@@ -91,20 +91,19 @@ def bci2a_shallow_conv_net():
 
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    preprocess(ds.dataset_instance, [
-        Preprocessor('pick_types', eeg=True, meg=False, stim=False),
-        Preprocessor(lambda data: multiply(data, 1e6)),
-        # Preprocessor('resample', sfreq=128),
-        Preprocessor('filter', l_freq=4, h_freq=40),
-        Preprocessor(exponential_moving_standardize,
-                     factor_new=1e-3, init_block_size=1000)
-    ])
-    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0.5, trial_stop_offset_seconds=-1.5)
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[2])
+    ds.preprocess_dataset()
+    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
-    input_window_samples = windows_dataset[0][0].shape[1]
-    model = get_eeg_net(n_channels=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                        kernel_length=64, drop_prob=0.5)
+    input_window_samples = ds.get_input_window_sample()
+    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+    #                            kernel_length=32)
+    # model = nn_models.EEGConvGcn(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples)
+    model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                 kernel_length=32)
+    if cuda:
+        model.cuda()
+    summary(model, (n_channels, input_window_samples, 1))
     n_epochs = 750
     lr = 0.001
     weight_decay = 0

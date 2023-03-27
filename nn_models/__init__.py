@@ -1,1 +1,2 @@
-from .models_bd import cuda, get_eeg_net, get_shallow_conv_net
+from .models_gcn import EEGNetMine, EEGConvGcn
+from .models import cuda, ShallowFBCSPNet, EEGNetv4
