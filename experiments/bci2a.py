@@ -91,14 +91,15 @@ def bci2a_shallow_conv_net():
 
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[2])
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[3])
     ds.preprocess_dataset()
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
     # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                            kernel_length=32)
-    # model = nn_models.EEGConvGcn(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples)
+    #                            kernel_length=32, drop_prob=0.5)
+    # model = nn_models.EEGConvGcn(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                              kernel_length=4)
     model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)
     if cuda:
