@@ -28,9 +28,60 @@ import time
 from datetime import datetime
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
-from torchsummary import summary
+from torchinfo import summary
+from torch.utils.data import ConcatDataset
 
 moabb.set_log_level("info")
+
+
+def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
+    f = open(f"./log/{model_name}-{time.time()}.txt", "w")
+    f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
+    # for every subject in dataset, fit classifier and test
+    split_by_subject = windows_dataset.split('subject')
+    train_subject = ['1', '2', '3', '4', '5', '6', '7', '8']
+    test_subject = ['9']
+    train_set = ConcatDataset([split_by_subject[i] for i in train_subject])
+    test_set = ConcatDataset([split_by_subject[i] for i in test_subject])
+    clf.train_split = predefined_split(test_set)
+    clf.fit(train_set, y=None, epochs=n_epochs)
+    y_test = test_set.get_metadata().target
+    test_accuracy = clf.score(test_set, y=y_test)
+    out = f"Test accuracy: " + str(round(test_accuracy, 5)) + "\n"
+    print(out)
+    f.write(out)
+    f.close()
+
+
+def bci2a_eeg_net():
+    set_random_seeds(seed=14388341, cuda=cuda)
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
+    # ds.preprocess_dataset()
+    ds.preprocess_dataset()
+    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
+    n_channels = ds.get_channel_num()
+    input_window_samples = ds.get_input_window_sample()
+    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+    #                            kernel_length=32, drop_prob=0.5)
+    # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                          kernel_length=64)
+    model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                 kernel_length=32)
+    if cuda:
+        model.cuda()
+    summary(model, (1, n_channels, input_window_samples, 1))
+    n_epochs = 750
+    lr = 0.001
+    weight_decay = 0
+    batch_size = 64
+    clf = EEGClassifier(module=model,
+                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
+                        optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,
+                        callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
+                        device='cuda' if cuda else 'cpu'
+                        )
+    # _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    _cross_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
 
 
 def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
@@ -67,7 +118,7 @@ def bci2a_shallow_conv_net():
                                       final_conv_length=30, drop_prob=0.25)
     if cuda:
         model.cuda()
-    summary(model, (n_channels, input_window_samples, 1))
+    summary(model, (1, n_channels, input_window_samples, 1))
     # for cropped training
     to_dense_prediction_model(model)
     n_preds_per_input = get_output_shape(model, n_channels, input_window_samples)[2]
@@ -87,35 +138,6 @@ def bci2a_shallow_conv_net():
                         cropped=True, device='cuda' if cuda else 'cpu'
                         )
     _within_subject_experiment(model_name='ShallowConvNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
-
-
-def bci2a_eeg_net():
-    set_random_seeds(seed=14388341, cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=[3])
-    ds.preprocess_dataset()
-    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
-    n_channels = ds.get_channel_num()
-    input_window_samples = ds.get_input_window_sample()
-    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                            kernel_length=32, drop_prob=0.5)
-    # model = nn_models.EEGConvGcn(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                              kernel_length=4)
-    model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                                 kernel_length=32)
-    if cuda:
-        model.cuda()
-    summary(model, (n_channels, input_window_samples, 1))
-    n_epochs = 750
-    lr = 0.001
-    weight_decay = 0
-    batch_size = 64
-    clf = EEGClassifier(module=model,
-                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
-                        optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,
-                        callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
-                        device='cuda' if cuda else 'cpu'
-                        )
-    _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
 
 
 def bci2a_csp_lda():
