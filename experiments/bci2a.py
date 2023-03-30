@@ -39,10 +39,10 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
     f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
     # for every subject in dataset, fit classifier and test
     split_by_subject = windows_dataset.split('subject')
-    train_subject = ['1', '2', '3', '4', '5', '6', '7', '8']
-    test_subject = ['9']
-    train_set = ConcatDataset([split_by_subject[i] for i in train_subject])
-    test_set = ConcatDataset([split_by_subject[i] for i in test_subject])
+    train_subjects = ['1', '2', '3', '4', '5', '6', '7', '8']
+    test_subjects = ['9']
+    train_set = ConcatDataset([split_by_subject[i] for i in train_subjects])
+    test_set = ConcatDataset([split_by_subject[i] for i in test_subjects])
     clf.train_split = predefined_split(test_set)
     clf.fit(train_set, y=None, epochs=n_epochs)
     y_test = test_set.get_metadata().target
@@ -65,8 +65,12 @@ def bci2a_eeg_net():
     #                            kernel_length=32, drop_prob=0.5)
     # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
-    model = nn_models.EEGNetMine(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                                 kernel_length=32)
+    # model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                            kernel_length=32)
+    # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                          kernel_length=32)
+    model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                kernel_length=64)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
