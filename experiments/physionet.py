@@ -78,10 +78,12 @@ def physionet_eeg_net():
                                                 })
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
-    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                            kernel_length=64, drop_prob=0.5)
-    model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                                kernel_length=64)
+    model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+                               kernel_length=64, drop_prob=0.5)
+    # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                             kernel_length=64)
+    # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                          kernel_length=15)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))

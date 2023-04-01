@@ -39,8 +39,8 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
     f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
     # for every subject in dataset, fit classifier and test
     split_by_subject = windows_dataset.split('subject')
-    train_subjects = ['1', '2', '3', '4', '5', '6', '7', '8']
-    test_subjects = ['9']
+    train_subjects = ['9', '2', '3', '4', '5', '6', '7', '8']
+    test_subjects = ['1']
     train_set = ConcatDataset([split_by_subject[i] for i in train_subjects])
     test_set = ConcatDataset([split_by_subject[i] for i in test_subjects])
     clf.train_split = predefined_split(test_set)
@@ -57,7 +57,7 @@ def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
     # ds.preprocess_dataset()
-    ds.preprocess_dataset()
+    ds.preprocess_dataset(resample_freq=128)
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
@@ -66,11 +66,13 @@ def bci2a_eeg_net():
     # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
     # model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                            kernel_length=32)
+    #                            kernel_length=64, drop_p=0.5)
     # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=32)
     model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                 kernel_length=64)
+    # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                             kernel_length=64)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
@@ -84,8 +86,8 @@ def bci2a_eeg_net():
                         callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         device='cuda' if cuda else 'cpu'
                         )
-    # _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
-    _cross_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    # _cross_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
 
 
 def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
