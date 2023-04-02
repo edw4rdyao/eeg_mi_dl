@@ -35,8 +35,6 @@ moabb.set_log_level("info")
 
 
 def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
-    f = open(f"./log/{model_name}-{time.time()}.txt", "w")
-    f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
     # for every subject in dataset, fit classifier and test
     split_by_subject = windows_dataset.split('subject')
     train_subjects = ['9', '2', '3', '4', '5', '6', '7', '8']
@@ -45,34 +43,29 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
     test_set = ConcatDataset([split_by_subject[i] for i in test_subjects])
     clf.train_split = predefined_split(test_set)
     clf.fit(train_set, y=None, epochs=n_epochs)
-    y_test = test_set.get_metadata().target
-    test_accuracy = clf.score(test_set, y=y_test)
-    out = f"Test accuracy: " + str(round(test_accuracy, 5)) + "\n"
-    print(out)
-    f.write(out)
-    f.close()
 
 
 def bci2a_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    # ds.preprocess_dataset()
+    ds.preprocess_dataset()
     ds.preprocess_dataset(resample_freq=128)
+    # windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0.5, trial_stop_offset_seconds=-1.5)
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
     # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                            kernel_length=32, drop_prob=0.5)
+    #                            kernel_length=64, drop_prob=0.5)
     # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
     # model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                            kernel_length=64, drop_p=0.5)
     # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=32)
-    model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                                kernel_length=64)
-    # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=2, input_window_size=input_window_samples,
     #                             kernel_length=64)
+    model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                kernel_length=64)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
@@ -91,8 +84,6 @@ def bci2a_eeg_net():
 
 
 def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
-    f = open(f"./log/{model_name}-{time.time()}.txt", "w")
-    f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
     # for every subject in dataset, fit classifier and test
     subjects_windows_dataset = windows_dataset.split('subject')
     subjects_accuracy = []
@@ -102,16 +93,6 @@ def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
         test_set = split_by_session['session_E']
         clf.train_split = predefined_split(test_set)
         clf.fit(train_set, y=None, epochs=n_epochs)
-        y_test = test_set.get_metadata().target
-        test_accuracy = clf.score(test_set, y=y_test)
-        out = f"Subject{subject} test accuracy: " + str(round(test_accuracy, 5)) + "\n"
-        print(out)
-        f.write(out)
-        subjects_accuracy.append(round(test_accuracy, 5))
-    result = model_name + " within-subject accuracy: " + str(subjects_accuracy) + "\n"
-    result += f"Mean accuracy: {np.mean(subjects_accuracy) * 100:.2f}%\n"
-    f.write(result)
-    f.close()
 
 
 def bci2a_shallow_conv_net():

@@ -20,6 +20,12 @@ def _load_physionet_braindecode(subject_ids):
     return dataset_instance, dataset_description
 
 
+def _load_munich_braindecode(subject_ids):
+    dataset_description = "Motor imagery dataset from Grosse-Wentrup et al. 2009"
+    dataset_instance = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
+    return dataset_instance, dataset_description
+
+
 class DatasetFromBraindecode:
     def __init__(self, dataset_name, subject_ids):
         """get dataset instance from braindecode lib
@@ -37,6 +43,8 @@ class DatasetFromBraindecode:
             self.raw_dataset, self.description = _load_bci2a_braindecode(subject_ids)
         elif dataset_name == 'physionet':
             self.raw_dataset, self.description = _load_physionet_braindecode(subject_ids)
+        elif dataset_name == 'munich':
+            self.raw_dataset, self.description = _load_munich_braindecode(subject_ids)
         else:
             raise ValueError(
                 "dataset:%s is not supported" % dataset_name
