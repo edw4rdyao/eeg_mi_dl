@@ -65,9 +65,9 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
 def physionet_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     all_valid_subjects, _, _ = _get_subject_split()
-    ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
+    ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=[1, 24, 32, 108])
     ds.uniform_duration(4.0)
-    ds.preprocess_dataset(low_freq=4, high_freq=38)
+    ds.preprocess_dataset()
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0,
                                                 trial_stop_offset_seconds=-1,
                                                 mapping={
@@ -78,19 +78,21 @@ def physionet_eeg_net():
                                                 })
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
-    model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                               kernel_length=64, drop_prob=0.5)
+    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+    #                            kernel_length=64, drop_prob=0.5)
     # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                             kernel_length=64)
     # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                          kernel_length=15)
+    #                          kernel_length=64)
+    model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                             kernel_length=64)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
     n_epochs = 750
     lr = 0.001
-    weight_decay = 0
-    batch_size = 64
+    weight_decay = 1e-8
+    batch_size = 32
     clf = EEGClassifier(module=model,
                         criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
                         optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,

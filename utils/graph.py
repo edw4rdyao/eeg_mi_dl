@@ -13,7 +13,7 @@ def get_adjacency_matrix(n_electrodes, mode):
         for i in range(n_electrodes):
             A[i][i] = 1
     # print("Adjacency Matrix:", A)
-    A = normalize_adjacency_matrix(A)
+    # A = normalize_adjacency_matrix(A)
     return A
 
 

@@ -191,27 +191,27 @@ class ST_GCN(nn.Module):
         block_conv = nn.Sequential(
             # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
-            # nn.BatchNorm2d(1, affine=True),
+            nn.BatchNorm2d(1),
             nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1, 2), stride=(1, 2)),
+            nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
-            # nn.BatchNorm2d(1, affine=True),
+            nn.BatchNorm2d(1),
             nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1, 2), stride=(1, 2)),
+            nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             # output shape:
         )
         block_gcn = nn.Sequential(
             # input shape:
-            GraphConvolution(A, self.input_windows_size // 4, self.input_windows_size // 4),
+            GraphConvolution(A, self.input_windows_size // 16, self.input_windows_size // 16),
             nn.ReLU(),
-            # nn.Dropout(p=self.drop_p),
+            nn.Dropout(p=self.drop_p),
             nn.Flatten()
             # output shape:
         )
         block_classifier = nn.Sequential(
             # input shape:
-            nn.Linear(self.input_windows_size // 4 * self.n_channels, 64),
-            # nn.Dropout(p=self.drop_p),
+            nn.Linear(self.input_windows_size // 16 * self.n_channels, 64),
+            nn.Dropout(p=self.drop_p),
             nn.Linear(64, self.n_classes),
             nn.LogSoftmax(dim=1)
             # output shape: (B, N)   (64, 4)
@@ -408,7 +408,8 @@ class ASTGCN(nn.Module):
             nn.Dropout(p=self.drop_p)
         )
         self.block_conv_2 = nn.Sequential(
-            nn.Conv2d(16, 32, (self.n_channels, 1), stride=1, padding=(0, 0)),
+            nn.Conv2d(16, 32, (self.n_channels, 1), stride=1, padding=(0, 0), groups=16),
+            nn.BatchNorm2d(32),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4))
         )
