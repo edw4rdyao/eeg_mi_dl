@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 from utils import get_adjacency_matrix, transpose_to_b_1_c_0, init_weight_bias
+from torch.nn import functional
 
 
 class Conv2dWithConstraint(nn.Conv2d):
@@ -76,7 +77,7 @@ class GraphAttentionLayer(nn.Module):
         nn.init.xavier_uniform_(self.W.data, gain=1.414)
         self.a = nn.Parameter(torch.zeros(size=(2 * out_features, 1)))
         nn.init.xavier_uniform_(self.a.data, gain=1.414)
-        self.leakyrelu = nn.LeakyReLU(self.alpha)
+        self.leaky_relu = nn.LeakyReLU(self.alpha)
 
     def forward(self, inp, adj):
         """
@@ -88,24 +89,21 @@ class GraphAttentionLayer(nn.Module):
 
         a_input = torch.cat([h.repeat(1, N).view(N * N, -1), h.repeat(N, 1)], dim=1).view(N, -1, 2 * self.out_features)
         # [N, N, 2*out_features]
-        e = self.leakyrelu(torch.matmul(a_input, self.a).squeeze(2))
+        e = self.leaky_relu(torch.matmul(a_input, self.a).squeeze(2))
         # [N, N, 1] => [N, N] 图注意力的相关系数（未归一化）
 
         zero_vec = -1e12 * torch.ones_like(e)  # 将没有连接的边置为负无穷
         attention = torch.where(adj > 0, e, zero_vec)  # [N, N]
         # 表示如果邻接矩阵元素大于0时，则两个节点有连接，该位置的注意力系数保留，
         # 否则需要mask并置为非常小的值，原因是softmax的时候这个最小值会不考虑。
-        attention = F.softmax(attention, dim=1)  # softmax形状保持不变 [N, N]，得到归一化的注意力权重！
-        attention = F.dropout(attention, self.dropout, training=self.training)  # dropout，防止过拟合
+        attention = functional.softmax(attention, dim=1)  # softmax形状保持不变 [N, N]，得到归一化的注意力权重！
+        attention = functional.dropout(attention, self.dropout, training=self.training)  # dropout，防止过拟合
         h_prime = torch.matmul(attention, h)  # [N, N].[N, out_features] => [N, out_features]
         # 得到由周围节点通过注意力权重进行更新的表示
         if self.concat:
-            return F.elu(h_prime)
+            return functional.elu(h_prime)
         else:
             return h_prime
-
-    def __repr__(self):
-        return self.__class__.__name__ + ' (' + str(self.in_features) + ' -> ' + str(self.out_features) + ')'
 
 
 class EEGNetRp(nn.Module):
@@ -192,25 +190,24 @@ class ST_GCN(nn.Module):
             # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
             nn.BatchNorm2d(1),
-            nn.ReLU(),
+            nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             nn.Conv2d(1, 1, (1, self.kernel_length), stride=1, padding='same'),
             nn.BatchNorm2d(1),
-            nn.ReLU(),
-            nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
+            nn.ELU(),
+            nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
             # output shape:
         )
         block_gcn = nn.Sequential(
             # input shape:
-            GraphConvolution(A, self.input_windows_size // 16, self.input_windows_size // 16),
-            nn.ReLU(),
-            nn.Dropout(p=self.drop_p),
+            # GraphConvolution(A, self.input_windows_size // 32, self.input_windows_size // 32),
+            # nn.ELU(),
             nn.Flatten()
             # output shape:
         )
         block_classifier = nn.Sequential(
             # input shape:
-            nn.Linear(self.input_windows_size // 16 * self.n_channels, 64),
+            nn.Linear(self.input_windows_size // 32 * self.n_channels, 64),
             nn.Dropout(p=self.drop_p),
             nn.Linear(64, self.n_classes),
             nn.LogSoftmax(dim=1)

@@ -25,7 +25,7 @@ from datetime import datetime
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
 from torchinfo import summary
-from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset, DataLoader
 
 moabb.set_log_level("info")
 
@@ -45,35 +45,27 @@ def _get_subject_split():
 
 
 def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
-    f = open(f"./log/{model_name}-{time.time()}.txt", "w")
-    f.write("Model: " + model_name + "\nTime: " + str(datetime.now()) + "\n")
     # for every subject in dataset, fit classifier and test
     _, train_subjects, test_subjects = _get_subject_split()
     split_by_subject = windows_dataset.split('subject')
     train_set = ConcatDataset([split_by_subject[str(i)] for i in train_subjects])
     test_set = ConcatDataset([split_by_subject[str(i)] for i in test_subjects])
     clf.train_split = predefined_split(test_set)
-    clf.fit(train_set, y=None, epochs=n_epochs)
-    y_test = test_set.get_metadata().target
-    test_accuracy = clf.score(test_set, y=y_test)
-    out = f"Test accuracy: " + str(round(test_accuracy, 5)) + "\n"
-    print(out)
-    f.write(out)
-    f.close()
+    clf.fit(X=train_set, y=None, epochs=n_epochs)
 
 
 def physionet_eeg_net():
     set_random_seeds(seed=14388341, cuda=cuda)
     all_valid_subjects, _, _ = _get_subject_split()
-    ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=[1, 24, 32, 108])
+    ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
     ds.uniform_duration(4.0)
-    ds.preprocess_dataset()
+    ds.preprocess_dataset(low_freq=4, high_freq=40)
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0,
                                                 trial_stop_offset_seconds=-1,
                                                 mapping={
                                                     'left_hand': 0,
                                                     'right_hand': 1,
-                                                    'hands': 2,
+                                                    'rest': 2,
                                                     'feet': 3
                                                 })
     n_channels = ds.get_channel_num()
@@ -82,20 +74,21 @@ def physionet_eeg_net():
     #                            kernel_length=64, drop_prob=0.5)
     # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                             kernel_length=64)
-    # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                             kernel_length=15)
+    # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
-    model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                             kernel_length=64)
+    # model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+    #                                   drop_prob=0.25, final_conv_length=16)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
-    n_epochs = 750
+    n_epochs = 500
     lr = 0.001
-    weight_decay = 1e-8
-    batch_size = 32
-    clf = EEGClassifier(module=model,
-                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
-                        optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,
+    batch_size = 64
+    clf = EEGClassifier(module=model, iterator_train__shuffle=True,
+                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.Adam, train_split=None,
+                        optimizer__lr=lr, batch_size=batch_size,
                         callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         device='cuda' if cuda else 'cpu'
                         )
