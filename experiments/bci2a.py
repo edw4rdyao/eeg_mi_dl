@@ -2,6 +2,7 @@ import dataset_loader
 from braindecode import EEGClassifier
 from braindecode.util import set_random_seeds
 import torch
+from torch import nn, optim
 from braindecode.augmentation import AugmentedDataLoader, SignFlip, FrequencyShift
 from skorch.helper import predefined_split, SliceDataset
 from skorch.callbacks import LRScheduler
@@ -29,7 +30,7 @@ from datetime import datetime
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
 from torchinfo import summary
-from torch.utils.data import ConcatDataset
+from torch.utils.data import ConcatDataset, DataLoader
 
 moabb.set_log_level("info")
 
@@ -45,7 +46,7 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
     clf.fit(train_set, y=None, epochs=n_epochs)
 
 
-def bci2a_eeg_net():
+def bci2a_eeg_net_t():
     set_random_seeds(seed=14388341, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
     ds.preprocess_dataset()
@@ -54,8 +55,8 @@ def bci2a_eeg_net():
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
-    # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                            kernel_length=64, drop_prob=0.5)
+    model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+                               kernel_length=64, drop_prob=0.5)
     # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
     # model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
@@ -64,8 +65,8 @@ def bci2a_eeg_net():
     #                          kernel_length=32)
     # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=2, input_window_size=input_window_samples,
     #                             kernel_length=64)
-    model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-                                kernel_length=64)
+    # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    #                             kernel_length=64)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
@@ -81,6 +82,64 @@ def bci2a_eeg_net():
                         )
     _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
     # _cross_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+
+
+def bci2a_eeg_net():
+    set_random_seeds(seed=14388341, cuda=cuda)
+    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
+    ds.preprocess_dataset()
+    ds.preprocess_dataset(resample_freq=128)
+    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
+    n_channels = ds.get_channel_num()
+    input_window_samples = ds.get_input_window_sample()
+    model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
+                               kernel_length=64, drop_prob=0.5)
+    if cuda:
+        model.cuda()
+    summary(model, (1, n_channels, input_window_samples, 1))
+    n_epochs = 750
+    lr = 0.001
+    batch_size = 64
+    subjects_windows_dataset = windows_dataset.split('subject')
+    subjects_accuracy = []
+    for subject, windows_dataset in subjects_windows_dataset.items():
+        split_by_session = windows_dataset.split('session')
+        train_set = split_by_session['session_T']
+        test_set = split_by_session['session_E']
+        train_dataloader = DataLoader(train_set, batch_size=batch_size)
+        test_dataloader = DataLoader(test_set, batch_size=batch_size)
+        loss_function = nn.CrossEntropyLoss()
+        optimizer = optim.Adam(model.parameters(), lr=lr)
+        scheduler = optim.lr_scheduler.CosineAnnealingLR(optimizer=optimizer, T_max=n_epochs - 1)
+        for epoch in range(n_epochs):
+            model.train()
+            with torch.enable_grad():
+                for batch in train_dataloader:
+                    x_train, y_train, _ = batch
+                    if cuda:
+                        x_train = x_train.cuda()
+                        y_train = y_train.cuda()
+                    # y_train = y_train.max(1)[1]
+                    predict = model(x_train)
+                    loss = loss_function(predict, y_train)
+                    model.zero_grad()
+                    loss.backward()
+                    optimizer.step()
+
+            model.eval()
+            with torch.no_grad():
+                for batch in test_dataloader:
+                    x_test, y_test = batch
+                    if cuda:
+                        x_test = x_test.cuda()
+                        y_test = y_test.cuda()
+                    predict = model(x_test)
+                    loss = loss_function(predict, y_test)
+
+            current_lr = scheduler.get_lr()
+            scheduler.step()
+
+
 
 
 def _within_subject_experiment(model_name, windows_dataset, clf, n_epochs):
