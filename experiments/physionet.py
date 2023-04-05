@@ -2,31 +2,14 @@ import dataset_loader
 from braindecode import EEGClassifier
 from braindecode.util import set_random_seeds
 import torch
-from braindecode.augmentation import AugmentedDataLoader, SignFlip, FrequencyShift
-from skorch.helper import predefined_split, SliceDataset
+from skorch.helper import predefined_split
 from skorch.callbacks import LRScheduler
 from sklearn.model_selection import KFold, cross_val_score
-import numpy as np
 import moabb
-from moabb.evaluations import CrossSessionEvaluation, WithinSessionEvaluation, CrossSubjectEvaluation
-from moabb.paradigms import MotorImagery
-from mne.decoding import CSP
-from pyriemann.estimation import Covariances
-from pyriemann.tangentspace import TangentSpace
-from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
-from sklearn.linear_model import LogisticRegression
-from sklearn.svm import SVC
-from sklearn.pipeline import make_pipeline
-from utils import get_augmentation_transform
 import nn_models
 from nn_models import cuda
-import time
-from datetime import datetime
-from braindecode.models import to_dense_prediction_model, get_output_shape
-from braindecode.training import CroppedLoss
 from torchinfo import summary
 from torch.utils.data import ConcatDataset, DataLoader
-
 moabb.set_log_level("info")
 
 
@@ -44,8 +27,7 @@ def _get_subject_split():
     return all_valid_subjects, train_subjects, test_subjects
 
 
-def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
-    # for every subject in dataset, fit classifier and test
+def _cross_subject_experiment(windows_dataset, clf, n_epochs):
     _, train_subjects, test_subjects = _get_subject_split()
     split_by_subject = windows_dataset.split('subject')
     train_set = ConcatDataset([split_by_subject[str(i)] for i in train_subjects])
@@ -55,7 +37,7 @@ def _cross_subject_experiment(model_name, windows_dataset, clf, n_epochs):
 
 
 def physionet_eeg_net():
-    set_random_seeds(seed=14388341, cuda=cuda)
+    set_random_seeds(seed=20233202, cuda=cuda)
     all_valid_subjects, _, _ = _get_subject_split()
     ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
     ds.uniform_duration(4.0)
@@ -78,8 +60,6 @@ def physionet_eeg_net():
                              kernel_length=15)
     # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=64)
-    # model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-    #                                   drop_prob=0.25, final_conv_length=16)
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
@@ -92,4 +72,4 @@ def physionet_eeg_net():
                         callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         device='cuda' if cuda else 'cpu'
                         )
-    _cross_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    _cross_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)

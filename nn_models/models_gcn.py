@@ -200,8 +200,8 @@ class ST_GCN(nn.Module):
         )
         block_gcn = nn.Sequential(
             # input shape:
-            # GraphConvolution(A, self.input_windows_size // 32, self.input_windows_size // 32),
-            # nn.ELU(),
+            GraphConvolution(A, self.input_windows_size // 32, self.input_windows_size // 32),
+            nn.ELU(),
             nn.Flatten()
             # output shape:
         )
