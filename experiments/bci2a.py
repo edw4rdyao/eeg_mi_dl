@@ -52,42 +52,48 @@ def _within_subject_experiment(windows_dataset, clf, n_epochs):
         clf.fit(train_set, y=None, epochs=n_epochs)
 
 
-def bci2a_eeg_net():
-    set_random_seeds(seed=14388341, cuda=cuda)
+def bci2a(model_name, strategy, config):
+    set_random_seeds(seed=config.train.random_seed, cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    ds.preprocess_dataset()
-    # ds.preprocess_dataset(resample_freq=128)
-    # windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=0.5, trial_stop_offset_seconds=-1.5)
+    ds.preprocess_dataset(resample_freq=config.dataset.resample, high_freq=config.dataset.high_freq,
+                          low_freq=config.dataset.low_freq)
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
-    model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=4, input_window_samples=input_window_samples,
-                               kernel_length=64, drop_prob=0.5)
-    # model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                          kernel_length=64)
-    # model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                            kernel_length=64, drop_p=0.5)
+    model = None
+    if model_name == 'EEGNet':
+        model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=config.dataset.n_classes,
+                                   input_window_samples=input_window_samples, kernel_length=64, drop_prob=0.5)
+    elif model_name == 'ST_GCN':
+        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                 kernel_length=64)
+    elif model_name == 'EEGNetRp':
+        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                   kernel_length=64, drop_p=0.5)
     # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=32)
     # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                             kernel_length=64)
     # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                             kernel_length=64)
+
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
-    n_epochs = 750
-    lr = 0.001
+    n_epochs = config.train.epochs
+    lr = config.train.lr
     weight_decay = 0
-    batch_size = 64
+    batch_size = config.train.batch_size
     clf = EEGClassifier(module=model,
                         criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
                         optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,
                         callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         device='cuda' if cuda else 'cpu'
                         )
-    # _within_subject_experiment(model_name='EEGNet', windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
-    _cross_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    if strategy == 'within-subject':
+        _within_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
+    else:
+        _cross_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
 
 
 def bci2a_shallow_conv_net():

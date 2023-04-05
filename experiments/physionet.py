@@ -36,7 +36,7 @@ def _cross_subject_experiment(windows_dataset, clf, n_epochs):
     clf.fit(X=train_set, y=None, epochs=n_epochs)
 
 
-def physionet_eeg_net():
+def physionet(model_name, strategy, config):
     set_random_seeds(seed=20233202, cuda=cuda)
     all_valid_subjects, _, _ = _get_subject_split()
     ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
