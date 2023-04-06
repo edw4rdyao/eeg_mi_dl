@@ -5,7 +5,8 @@ import torch
 from torch import nn, optim
 from braindecode.augmentation import AugmentedDataLoader, SignFlip, FrequencyShift
 from skorch.helper import predefined_split, SliceDataset
-from skorch.callbacks import LRScheduler
+from skorch.callbacks import LRScheduler, Checkpoint
+from skorch import NeuralNetClassifier
 from sklearn.model_selection import KFold, cross_val_score
 import numpy as np
 import moabb
@@ -30,10 +31,9 @@ moabb.set_log_level("info")
 
 
 def _cross_subject_experiment(windows_dataset, clf, n_epochs):
-    # for every subject in dataset, fit classifier and test
     split_by_subject = windows_dataset.split('subject')
-    train_subjects = ['9', '2', '3', '4', '5', '6', '7', '8']
-    test_subjects = ['1']
+    train_subjects = ['1', '2', '3', '4', '5', '6', '7', '8']
+    test_subjects = ['9']
     train_set = ConcatDataset([split_by_subject[i] for i in train_subjects])
     test_set = ConcatDataset([split_by_subject[i] for i in test_subjects])
     clf.train_split = predefined_split(test_set)
@@ -41,9 +41,7 @@ def _cross_subject_experiment(windows_dataset, clf, n_epochs):
 
 
 def _within_subject_experiment(windows_dataset, clf, n_epochs):
-    # for every subject in dataset, fit classifier and test
     subjects_windows_dataset = windows_dataset.split('subject')
-    subjects_accuracy = []
     for subject, windows_dataset in subjects_windows_dataset.items():
         split_by_session = windows_dataset.split('session')
         train_set = split_by_session['session_T']
@@ -52,23 +50,24 @@ def _within_subject_experiment(windows_dataset, clf, n_epochs):
         clf.fit(train_set, y=None, epochs=n_epochs)
 
 
-def bci2a(model_name, strategy, config):
-    set_random_seeds(seed=config.train.random_seed, cuda=cuda)
+def bci2a(args, config):
+    set_random_seeds(seed=config['fit']['seed'], cuda=cuda)
     ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    ds.preprocess_dataset(resample_freq=config.dataset.resample, high_freq=config.dataset.high_freq,
-                          low_freq=config.dataset.low_freq)
+    ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
+                          low_freq=config['dataset']['low_freq'])
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
+    n_classes = config['dataset']['n_classes']
     model = None
-    if model_name == 'EEGNet':
-        model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=config.dataset.n_classes,
+    if args.model == 'EEGNet':
+        model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
                                    input_window_samples=input_window_samples, kernel_length=64, drop_prob=0.5)
-    elif model_name == 'ST_GCN':
-        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    elif args.model == 'ST_GCN':
+        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                  kernel_length=64)
-    elif model_name == 'EEGNetRp':
-        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+    elif args.model == 'EEGNetRp':
+        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                    kernel_length=64, drop_p=0.5)
     # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                          kernel_length=32)
@@ -76,21 +75,22 @@ def bci2a(model_name, strategy, config):
     #                             kernel_length=64)
     # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
     #                             kernel_length=64)
-
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
-    n_epochs = config.train.epochs
-    lr = config.train.lr
-    weight_decay = 0
-    batch_size = config.train.batch_size
+    n_epochs = config['fit']['epochs']
+    lr = config['fit']['lr']
+    batch_size = config['fit']['batch_size']
+
     clf = EEGClassifier(module=model,
-                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.AdamW, train_split=None,
-                        optimizer__lr=lr, optimizer__weight_decay=weight_decay, batch_size=batch_size,
-                        callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
+                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.Adam, train_split=None,
+                        optimizer__lr=lr, batch_size=batch_size,
+                        callbacks=["accuracy",
+                                   ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1)),
+                                   Checkpoint(dirname=args.save_dir)],
                         device='cuda' if cuda else 'cpu'
                         )
-    if strategy == 'within-subject':
+    if args.strategy == 'within-subject':
         _within_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
     else:
         _cross_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
