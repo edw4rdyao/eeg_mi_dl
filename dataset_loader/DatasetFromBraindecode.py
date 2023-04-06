@@ -20,10 +20,13 @@ def _load_physionet_braindecode(subject_ids):
     return dataset_instance, dataset_description
 
 
-class DatasetFromBraindecode:
-    """
+def _load_munich_braindecode(subject_ids):
+    dataset_description = "Motor imagery dataset from Grosse-Wentrup et al. 2009"
+    dataset_instance = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
+    return dataset_instance, dataset_description
 
-    """
+
+class DatasetFromBraindecode:
     def __init__(self, dataset_name, subject_ids):
         """get dataset instance from braindecode lib
 
@@ -40,6 +43,8 @@ class DatasetFromBraindecode:
             self.raw_dataset, self.description = _load_bci2a_braindecode(subject_ids)
         elif dataset_name == 'physionet':
             self.raw_dataset, self.description = _load_physionet_braindecode(subject_ids)
+        elif dataset_name == 'munich':
+            self.raw_dataset, self.description = _load_munich_braindecode(subject_ids)
         else:
             raise ValueError(
                 "dataset:%s is not supported" % dataset_name
@@ -104,6 +109,13 @@ class DatasetFromBraindecode:
             preprocessors.append(Preprocessor('resample', sfreq=resample_freq))
         preprocessors.append(Preprocessor(exponential_moving_standardize, factor_new=1e-3, init_block_size=1000))
         preprocess(self.raw_dataset, preprocessors)
+
+    def uniform_duration(self, mapping):
+        for ds in self.raw_dataset.datasets:
+            if hasattr(ds, 'raw'):
+                ds.raw.annotations.set_durations(mapping)
+            else:
+                raise ValueError('this operation is for mne.io.Raw')
 
     def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0, mapping=None,
                                window_size_samples=None, window_stride_samples=None):
