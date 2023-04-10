@@ -48,7 +48,7 @@ def physionet(args, config):
                                                 mapping={
                                                     'left_hand': 0,
                                                     'right_hand': 1,
-                                                    'rest': 2,
+                                                    'hands': 2,
                                                     'feet': 3
                                                 })
     n_channels = ds.get_channel_num()
@@ -59,7 +59,7 @@ def physionet(args, config):
                                    input_window_samples=input_window_samples, kernel_length=64, drop_prob=0.5)
     elif args.model == 'ST_GCN':
         model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 kernel_length=15)
+                                 kernel_length=32, drop_prob=0.5)
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)

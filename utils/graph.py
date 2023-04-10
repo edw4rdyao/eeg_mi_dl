@@ -2,25 +2,25 @@ import torch
 
 
 def get_adjacency_matrix(n_electrodes, mode):
-    A = torch.zeros(n_electrodes, n_electrodes)
+    adjacency = torch.zeros(n_electrodes, n_electrodes)
     if mode == 'full':
-        A = torch.ones(n_electrodes, n_electrodes)
+        adjacency = torch.ones(n_electrodes, n_electrodes)
     elif mode == 'dis':
         edges = get_edges('bci2a')
         for i, j in edges:
-            A[i - 1][j - 1] = 1
-            A[j - 1][i - 1] = 1
+            adjacency[i - 1][j - 1] = 1
+            adjacency[j - 1][i - 1] = 1
         for i in range(n_electrodes):
-            A[i][i] = 1
-    # A = normalize_adjacency_matrix(A)
-    return A
+            adjacency[i][i] = 1
+    # adjacency = normalize_adjacency_matrix(adjacency)
+    return adjacency
 
 
-def normalize_adjacency_matrix(A):
-    D = torch.pow(A.sum(1).float(), -0.5)
-    D = torch.diag(D)
-    normalize_A = torch.matmul(torch.matmul(D, A), D)
-    return normalize_A
+def normalize_adjacency_matrix(adjacency):
+    degree = torch.pow(adjacency.sum(1).float(), -0.5)
+    degree = torch.diag(degree)
+    normalize_adjacency = torch.matmul(torch.matmul(degree, adjacency), degree)
+    return normalize_adjacency
 
 
 def get_edges(dataset):
