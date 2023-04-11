@@ -117,6 +117,13 @@ class DatasetFromBraindecode:
             else:
                 raise ValueError('this operation is for mne.io.Raw')
 
+    def drop_last_annotation(self):
+        for ds in self.raw_dataset.datasets:
+            if hasattr(ds, 'raw'):
+                ds.raw.annotations.delete(len(ds.raw.annotations) - 1)
+            else:
+                raise ValueError('this operation is for mne.io.Raw')
+
     def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0, mapping=None,
                                window_size_samples=None, window_stride_samples=None):
         """
