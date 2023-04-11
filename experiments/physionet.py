@@ -45,12 +45,12 @@ def physionet(args, config):
     ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
                           low_freq=config['dataset']['low_freq'])
     windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-2,
-                                                trial_stop_offset_seconds=2,
+                                                trial_stop_offset_seconds=0,
                                                 mapping={
                                                     'left_hand': 0,
                                                     'right_hand': 1,
-                                                    # 'hands': 2,
-                                                    'feet': 2
+                                                    'hands': 2,
+                                                    'feet': 3
                                                 })
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()

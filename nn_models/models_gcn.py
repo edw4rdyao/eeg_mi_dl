@@ -117,7 +117,6 @@ class EEGNetRp(nn.Module):
         self.kernel_length = kernel_length
         self.drop_p = drop_p
         self.input_windows_size = input_window_size
-        A = get_adjacency_matrix(self.n_channels, 'dis')
         self.block_temporal_conv = nn.Sequential(
             # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             nn.Conv2d(1, self.F1, (1, self.kernel_length),
@@ -186,16 +185,16 @@ class ST_GCN(nn.Module):
         self.importance = nn.Parameter(torch.randn(adjacency.size()[0], adjacency.size()[0]))
 
         self.block_conv = nn.Sequential(
-            nn.Conv2d(1, 8, (1, 15), stride=1, padding='same'),
+            nn.Conv2d(1, 8, (1, 31), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
 
-            nn.Conv2d(8, 8, (1, 7), stride=1, padding='same'),
+            nn.Conv2d(8, 8, (1, 15), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
-            nn.Dropout(p=self.drop_prob),
+            nn.Dropout(p=0.5),
 
             nn.Conv2d(8, 8, (self.n_channels, 1), stride=1, padding='same', groups=8),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
@@ -208,8 +207,8 @@ class ST_GCN(nn.Module):
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),
 
             nn.Flatten(),
+            nn.Dropout(p=0.75),
             nn.Linear(self.input_windows_size // 32 * 8, 64),
-            nn.Dropout(p=self.drop_prob),
 
             nn.Linear(64, self.n_classes),
             nn.LogSoftmax(dim=1)
