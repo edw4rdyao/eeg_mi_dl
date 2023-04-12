@@ -183,21 +183,25 @@ class ST_GCN(nn.Module):
         adjacency = get_adjacency_matrix(self.n_channels, 'full')
         self.register_buffer('adjacency', adjacency)
         self.importance = nn.Parameter(torch.randn(adjacency.size()[0], adjacency.size()[0]))
-
+        # time windows:[-1, 1]
+        # num of kernels: 8 16 16 66.17% | 8 8 8 64.64% | 16 16 16 65.72%
+        # num of kernels: 8(1,16) 16(1,16) 16 66.74%
+        # num of kernels: 8(1,8) 16(1,8) 16 66.86%
+        # num of kernels: 8(1,8) 32(1,8) 32 67.20%
         self.block_conv = nn.Sequential(
-            nn.Conv2d(1, 8, (1, 31), stride=1, padding='same'),
-            nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
-            nn.ELU(),
-            nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
-
-            nn.Conv2d(8, 8, (1, 15), stride=1, padding='same'),
+            nn.Conv2d(1, 8, (1, 8), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
+
+            nn.Conv2d(8, 32, (1, 8), stride=1, padding='same'),
+            nn.BatchNorm2d(32, momentum=0.01, eps=1e-3),
+            nn.ELU(),
+            nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             nn.Dropout(p=0.5),
 
-            nn.Conv2d(8, 8, (self.n_channels, 1), stride=1, padding='same', groups=8),
-            nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
+            nn.Conv2d(32, 32, (self.n_channels, 1), stride=1, bias=False, padding='same', groups=8),
+            nn.BatchNorm2d(32, momentum=0.01, eps=1e-3),
             nn.ELU(),
         )
 
@@ -205,11 +209,9 @@ class ST_GCN(nn.Module):
 
         self.block_classifier = nn.Sequential(
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),
-
             nn.Flatten(),
-            nn.Dropout(p=0.75),
-            nn.Linear(self.input_windows_size // 32 * 8, 64),
-
+            nn.Dropout(p=0.6),
+            nn.Linear(self.input_windows_size // 32 * 32, 64),
             nn.Linear(64, self.n_classes),
             nn.LogSoftmax(dim=1)
         )

@@ -44,8 +44,8 @@ def physionet(args, config):
     ds.drop_last_annotation()
     ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
                           low_freq=config['dataset']['low_freq'])
-    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-2,
-                                                trial_stop_offset_seconds=0,
+    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-1,
+                                                trial_stop_offset_seconds=1,
                                                 mapping={
                                                     'left_hand': 0,
                                                     'right_hand': 1,
