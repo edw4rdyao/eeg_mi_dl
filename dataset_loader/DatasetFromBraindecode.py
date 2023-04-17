@@ -71,6 +71,9 @@ class DatasetFromBraindecode:
         """
         return self.raw_dataset[0][0].shape[0]
 
+    def get_channels_name(self):
+        return self.raw_dataset.datasets[0].raw.info['ch_names']
+
     def get_input_window_sample(self):
         """
 
@@ -102,6 +105,16 @@ class DatasetFromBraindecode:
         preprocessors = []
         if pick_eeg:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['C2', 'CP1', 'TP7', 'FCz', 'O1', 'AF4', 'POz',
+        #                                                              'FC5', 'Iz', 'P2', 'FC6', 'T7', 'F3', 'F1',
+        #                                                              'FC4','T8', 'C4', 'CP6', 'P7', 'C3', 'C5', 'F4',
+        #                                                              'Fz','FC2', 'P8', 'F7', 'F5', 'CP3', 'AF8',
+        #                                                              'P6','CP2', 'Cz']))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['P5', 'P4', 'Fp1', 'Fp2', 'CPz', 'F2', 'C1',
+        #                                                              'T9', 'CP5', 'FC1', 'Oz', 'T10', 'Pz', 'AFz',
+        #                                                              'Fpz',  'C6', 'AF3', 'CP4', 'PO4', 'F6', 'TP8',
+        #                                                              'PO8', 'O2', 'PO7', 'PO3', 'FC3', 'FT8', 'FT7',
+        #                                                              'F8', 'P3', 'P1', 'AF7']))
         preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
         if low_freq or high_freq:
             preprocessors.append(Preprocessor('filter', l_freq=low_freq, h_freq=high_freq))

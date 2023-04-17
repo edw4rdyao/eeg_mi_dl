@@ -107,7 +107,7 @@ class GraphAttentionLayer(nn.Module):
 
 class EEGNetRp(nn.Module):
     def __init__(self, n_channels, n_classes, input_window_size,
-                 F1=8, D=2, F2=16, kernel_length=64, drop_p=0.5):
+                 F1=8, D=2, F2=16, kernel_length=64, drop_p=0.25):
         super(EEGNetRp, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
@@ -121,14 +121,14 @@ class EEGNetRp(nn.Module):
             # input shape: (B, C, E, T)(Batch, Channel, Electrode, Time)(64, 1, 22, 1000)
             nn.Conv2d(1, self.F1, (1, self.kernel_length),
                       stride=1, bias=False, padding='same'),
-            nn.BatchNorm2d(self.F1, momentum=0.01, affine=True, eps=1e-3)
+            nn.BatchNorm2d(self.F1)
             # output shape: (B, F1, E, T)(64, 8, 22, 1000)
         )
         self.block_spacial_conv = nn.Sequential(
             # input shape: (B, F1, E, T)(64, 8, 22, 1000)
             Conv2dWithConstraint(self.F1, self.F1 * self.D, (self.n_channels, 1),
                                  max_norm=1, stride=1, bias=False, groups=self.F1, padding=(0, 0)),
-            nn.BatchNorm2d(self.F1 * self.D, momentum=0.01, affine=True, eps=1e-3),
+            nn.BatchNorm2d(self.F1 * self.D),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
             nn.Dropout(p=self.drop_p)
@@ -137,10 +137,10 @@ class EEGNetRp(nn.Module):
         self.block_separable_conv = nn.Sequential(
             # input shape: (B, F1 * D, 1, T//4)(64, 16, 1, 1000 // 4)
             nn.Conv2d(self.F1 * self.D, self.F1 * self.D, (1, 16),
-                      stride=1, bias=False, groups=self.F1 * self.D, padding=(0, 16 // 2)),
+                      stride=1, bias=False, groups=self.F1 * self.D, padding='same'),
             nn.Conv2d(self.F1 * self.D, self.F2, (1, 1),
                       stride=1, bias=False, padding=(0, 0)),
-            nn.BatchNorm2d(self.F2, momentum=0.01, affine=True, eps=1e-3),
+            nn.BatchNorm2d(self.F2),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
             nn.Dropout(p=self.drop_p),
@@ -183,35 +183,45 @@ class ST_GCN(nn.Module):
         adjacency = get_adjacency_matrix(self.n_channels, 'full')
         self.register_buffer('adjacency', adjacency)
         self.importance = nn.Parameter(torch.randn(adjacency.size()[0], adjacency.size()[0]))
-        # time windows:[-1, 1]
-        # num of kernels: 8 16 16 66.17% | 8 8 8 64.64% | 16 16 16 65.72%
+        # class: 4 time windows:[-1, 1] p=0.5 p=0.6
+        # num of kernels: 8(1,8) 16(1,16) 16 66.17%
         # num of kernels: 8(1,16) 16(1,16) 16 66.74%
         # num of kernels: 8(1,8) 16(1,8) 16 66.86%
         # num of kernels: 8(1,8) 32(1,8) 32 67.20%
+
+        # class: 3 time windows:[-1, 1]
+        # num of kernels: 8(1,6) 16(1,16) 16 75.55%
+        # num of kernels: 8(1,16) 16(1,16) 16 75.85%
+        # num of kernels: 8(1,8) 16(1,8) 16 p=0.5 p=0.6 16 76.00%
+        # num of kernels: 8(1,8) 32(1,8) 32 p=0.5 p=0.6 32 75.62%
+
+        # class: 2 time windows:[-1, 1]
+        # num of kernels: 8(1,16) 16(1,16) 16 88.52%
+        # num of kernels: 8(1,8) 16(1,8) 16 p=0.5 p=0.6 16 88.41%
+        # num of kernels: 8(1,8) 32(1,8) 32 p=0.5 p=0.6 32 87.95%
         self.block_conv = nn.Sequential(
             nn.Conv2d(1, 8, (1, 8), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
 
-            nn.Conv2d(8, 32, (1, 8), stride=1, padding='same'),
-            nn.BatchNorm2d(32, momentum=0.01, eps=1e-3),
+            nn.Conv2d(8, 16, (1, 8), stride=1, padding='same'),
+            nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
-            nn.Dropout(p=0.5),
-
-            nn.Conv2d(32, 32, (self.n_channels, 1), stride=1, bias=False, padding='same', groups=8),
-            nn.BatchNorm2d(32, momentum=0.01, eps=1e-3),
-            nn.ELU(),
+            nn.Dropout(p=0.5)
         )
 
         self.block_gcn = GraphConvolution(self.input_windows_size // 32, self.input_windows_size // 32)
 
         self.block_classifier = nn.Sequential(
+            nn.Conv2d(16, 16, (self.n_channels, 1), stride=1, bias=False, padding='same', groups=8),
+            nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
+            nn.ELU(),
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),
             nn.Flatten(),
             nn.Dropout(p=0.6),
-            nn.Linear(self.input_windows_size // 32 * 32, 64),
+            nn.Linear(self.input_windows_size // 32 * 16, 64),
             nn.Linear(64, self.n_classes),
             nn.LogSoftmax(dim=1)
         )

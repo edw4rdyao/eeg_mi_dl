@@ -1,4 +1,4 @@
-seed: 20232023
-epochs: 150
+seed: 2023
+epochs: 200
 lr: 0.001
 batch_size: 64

@@ -1,4 +1,5 @@
 import torch
+import numpy
 
 
 def get_adjacency_matrix(n_electrodes, mode):
@@ -50,3 +51,32 @@ def get_edges(dataset):
             (21, 22)
         ]
     return edges
+
+
+def get_electrode_importance(model):
+    trained_model_param = model.state_dict()
+    importance = trained_model_param['importance']
+    adjacency = trained_model_param['adjacency']
+    importance = (importance * adjacency).cpu().numpy()
+    importance = numpy.absolute(importance)
+    print(importance)
+    row, col = importance.shape
+    edge_importance_index = numpy.argsort(importance.flatten())
+    print(edge_importance_index)
+    selected_electrode = set()
+    for index in edge_importance_index:
+        i = index // row
+        j = index % col
+        selected_electrode.add(i)
+        selected_electrode.add(j)
+    selected_electrode = list(selected_electrode)
+    print(selected_electrode)
+    # electrode_importance = numpy.zeros(row)
+    # for i in range(row):
+    #     for j in range(col):
+    #         if not i == j:
+    #             electrode_importance[i] += importance[i][j]
+    #             electrode_importance[j] += importance[i][j]
+    #         else:
+    #             electrode_importance[i] += importance[i][j]
+    # print(electrode_importance)
