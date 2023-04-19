@@ -105,16 +105,42 @@ class DatasetFromBraindecode:
         preprocessors = []
         if pick_eeg:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
+        # 4 classes
         # preprocessors.append(Preprocessor('pick_channels', ch_names=['C2', 'CP1', 'TP7', 'FCz', 'O1', 'AF4', 'POz',
         #                                                              'FC5', 'Iz', 'P2', 'FC6', 'T7', 'F3', 'F1',
-        #                                                              'FC4','T8', 'C4', 'CP6', 'P7', 'C3', 'C5', 'F4',
-        #                                                              'Fz','FC2', 'P8', 'F7', 'F5', 'CP3', 'AF8',
-        #                                                              'P6','CP2', 'Cz']))
+        #                                                              'FC4', 'T8', 'C4', 'CP6', 'P7', 'C3', 'C5', 'F4',
+        #                                                              'Fz', 'FC2', 'P8', 'F7', 'F5', 'CP3', 'AF8',
+        #                                                              'P6', 'CP2', 'Cz']))
         # preprocessors.append(Preprocessor('pick_channels', ch_names=['P5', 'P4', 'Fp1', 'Fp2', 'CPz', 'F2', 'C1',
         #                                                              'T9', 'CP5', 'FC1', 'Oz', 'T10', 'Pz', 'AFz',
-        #                                                              'Fpz',  'C6', 'AF3', 'CP4', 'PO4', 'F6', 'TP8',
+        #                                                              'Fpz', 'C6', 'AF3', 'CP4', 'PO4', 'F6', 'TP8',
         #                                                              'PO8', 'O2', 'PO7', 'PO3', 'FC3', 'FT8', 'FT7',
         #                                                              'F8', 'P3', 'P1', 'AF7']))
+
+        # 3 classes
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['FT7', 'PO3', 'P1', 'TP8', 'P3', 'AF7', 'FC3',
+        #                                                              'O2', 'PO7', 'F6', 'FT8', 'C6', 'Fpz', 'F8',
+        #                                                              'AF3', 'PO8', 'Pz', 'AFz', 'CP5', 'PO4', 'T9',
+        #                                                              'FC1', 'C1', 'Cz', 'CPz', 'CP4', 'P4', 'F2',
+        #                                                              'Fp2', 'CP3', 'AF8', 'T10']))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['Oz', 'P6', 'F7', 'F4', 'P5', 'CP6', 'C4', 'CP2',
+        #                                                              'FC2', 'P7', 'F5', 'Fz', 'C5', 'P2', 'Fp1',
+        #                                                              'F1', 'P8', 'C3', 'AF4', 'F3', 'T8', 'FC4',
+        #                                                              'FC5', 'Iz', 'T7', 'FCz', 'POz', 'FC6',
+        #                                                              'C2', 'O1', 'CP1', 'TP7']))
+
+        # 2 classes
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['FC3', 'P3', 'AF7', 'P1', 'PO3', 'TP8', 'PO4',
+        #                                                              'PO7', 'FT7', 'O2', 'C6', 'C1', 'PO8', 'FT8',
+        #                                                              'T10', 'Pz', 'CP4', 'P4', 'CP5', 'F6', 'AF3',
+        #                                                              'FC1', 'Fpz', 'CPz', 'AFz', 'F8', 'F2', 'Cz',
+        #                                                              'CP3', 'C4', 'Fp2', 'Fz']))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['Oz', 'C5', 'P5', 'P6', 'FC2', 'CP2', 'CP6',
+        #                                                              'T9', 'P7', 'F4', 'F7', 'AF8', 'C3', 'P2',
+        #                                                              'AF4', 'FC4', 'P8', 'F5', 'POz', 'FC5', 'FCz',
+        #                                                              'F1', 'T8', 'Fp1', 'F3', 'CP1', 'Iz', 'C2',
+        #                                                              'O1', 'FC6', 'TP7', 'T7']))
+
         preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
         if low_freq or high_freq:
             preprocessors.append(Preprocessor('filter', l_freq=low_freq, h_freq=high_freq))

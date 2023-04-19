@@ -75,6 +75,8 @@ def physionet(args, config):
     elif args.model == 'ST_GCN':
         model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                  kernel_length=32, drop_prob=0.5)
+        # model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
+        #                            input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)
