@@ -88,7 +88,8 @@ class DatasetFromBraindecode:
             )
         return self.windows_dataset[0][0].shape[1]
 
-    def preprocess_dataset(self, pick_eeg=True, resample_freq=None, low_freq=None, high_freq=None):
+    def preprocess_dataset(self, pick_eeg=True, resample_freq=None, low_freq=None, high_freq=None,
+                           picked_channels=None):
         """
 
         Parameters
@@ -97,6 +98,7 @@ class DatasetFromBraindecode:
         resample_freq
         low_freq
         high_freq
+        picked_channels
 
         Returns
         -------
@@ -105,17 +107,19 @@ class DatasetFromBraindecode:
         preprocessors = []
         if pick_eeg:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
+        if picked_channels:
+            preprocessors.append(Preprocessor('pick_channels', ch_names=picked_channels))
         # 4 classes
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['C2', 'CP1', 'TP7', 'FCz', 'O1', 'AF4', 'POz',
-        #                                                              'FC5', 'Iz', 'P2', 'FC6', 'T7', 'F3', 'F1',
-        #                                                              'FC4', 'T8', 'C4', 'CP6', 'P7', 'C3', 'C5', 'F4',
-        #                                                              'Fz', 'FC2', 'P8', 'F7', 'F5', 'CP3', 'AF8',
-        #                                                              'P6', 'CP2', 'Cz']))
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['P5', 'P4', 'Fp1', 'Fp2', 'CPz', 'F2', 'C1',
-        #                                                              'T9', 'CP5', 'FC1', 'Oz', 'T10', 'Pz', 'AFz',
-        #                                                              'Fpz', 'C6', 'AF3', 'CP4', 'PO4', 'F6', 'TP8',
-        #                                                              'PO8', 'O2', 'PO7', 'PO3', 'FC3', 'FT8', 'FT7',
-        #                                                              'F8', 'P3', 'P1', 'AF7']))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['AF7', 'P3', 'P1', 'FC3', 'FT7', 'PO3', 'FT8',
+        #                                                              'F8', 'O2', 'PO7', 'PO8', 'TP8', 'F6', 'PO4',
+        #                                                              'CP4', 'AF3', 'C6', 'Fpz', 'Pz', 'T10', 'AFz',
+        #                                                              'CP5', 'FC1', 'C1', 'F2', 'Oz', 'T9', 'CPz',
+        #                                                              'Fp2', 'P4', 'Fp1', 'Cz']))
+        # preprocessors.append(Preprocessor('pick_channels', ch_names=['P5', 'CP2', 'P6', 'CP3', 'AF8', 'F5', 'F7',
+        #                                                              'FC2', 'P8', 'Fz', 'F4', 'C5', 'P7', 'C3',
+        #                                                              'CP6', 'C4', 'T8', 'FC4', 'F1', 'F3', 'FC6',
+        #                                                              'P2', 'T7', 'FC5', 'AF4', 'Iz', 'POz', 'O1',
+        #                                                              'FCz', 'TP7', 'CP1', 'C2']))
 
         # 3 classes
         # preprocessors.append(Preprocessor('pick_channels', ch_names=['FT7', 'PO3', 'P1', 'TP8', 'P3', 'AF7', 'FC3',

@@ -76,7 +76,7 @@ def physionet(args, config):
                                    kernel_length=64, drop_p=0.5)
     elif args.model == 'ASGCNN':
         model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 kernel_length=32, drop_prob=0.5)
+                                 graph_strategy=config['model']['graph_strategy'])
         # model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
         #                            input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
