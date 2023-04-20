@@ -70,19 +70,20 @@ def physionet(args, config):
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
     if args.model == 'EEGNet':
-        model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
-                                   input_window_samples=input_window_samples, kernel_length=128, drop_prob=0.5)
-    elif args.model == 'ST_GCN':
-        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
+        # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
+        #                            input_window_samples=input_window_samples, kernel_length=128, drop_prob=0.5)
+        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
+                                   kernel_length=64, drop_p=0.5)
+    elif args.model == 'ASGCNN':
+        model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                  kernel_length=32, drop_prob=0.5)
         # model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
         #                            input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)
-    elif args.model == 'EEGNetRp':
-        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                   kernel_length=64, drop_p=0.5)
+    elif args.model == 'BASECNN':
+        model = nn_models.BASECNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples)
     else:
         raise ValueError(f"model {args.model} is not supported on this dataset.")
 
@@ -111,6 +112,6 @@ def physionet(args, config):
     train_set = _get_subjects_datasets(dataset_split_by_subject, train_subjects, n_classes)
     test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
-    get_electrode_importance(clf.module)
+    # get_electrode_importance(clf.module)
     clf.fit(X=train_set, y=None, epochs=n_epochs)
-    get_electrode_importance(clf.module)
+    # get_electrode_importance(clf.module)

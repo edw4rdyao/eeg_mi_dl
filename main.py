@@ -9,7 +9,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='physionet', choices=['bci2a', 'physionet'])
     parser.add_argument('--dataset_cfg', type=str, default='default.yaml')
-    parser.add_argument('--model', type=str, default='ST_GCN', choices=['EEGNet', 'EEGNetRp', 'ST_GCN', 'ASTGCN'])
+    parser.add_argument('--model', type=str, default='ASTGCN', choices=['EEGNet', 'ASGCNN', 'ASTGCN', 'BASECNN'])
     parser.add_argument('--strategy', type=str, default='cross-subject',
                         choices=['cross-subject', 'within-subject'])
     parser.add_argument('--fit_cfg', type=str, default='default.yaml')

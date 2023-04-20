@@ -1,4 +1,4 @@
 resample: ~
 high_freq: ~
 low_freq: ~
-n_classes: 2
+n_classes: 4

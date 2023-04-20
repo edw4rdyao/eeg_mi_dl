@@ -1,2 +1,2 @@
-from .models_gcn import EEGNetRp, ST_GCN, ASTGCN, EEGNetGCN, GCNEEGNet
+from .models_gcn import EEGNetRp, ASGCNN, ASTGCN, EEGNetGCN, GCNEEGNet, BASECNN
 from .models import *

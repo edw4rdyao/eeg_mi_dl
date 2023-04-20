@@ -171,9 +171,40 @@ class EEGNetRp(nn.Module):
         return x
 
 
-class ST_GCN(nn.Module):
-    def __init__(self, n_channels, n_classes, input_window_size, kernel_length=15, drop_prob=0.5):
-        super(ST_GCN, self).__init__()
+class BASECNN(nn.Module):
+    def __init__(self, n_channels, n_classes, input_window_size):
+        super(BASECNN, self).__init__()
+        self.n_channels = n_channels
+        self.n_classes = n_classes
+        self.input_window_size = input_window_size
+        self.block_conv = nn.Sequential(
+            nn.Conv2d(1, 40, (1, 8), stride=1, padding='same'),
+            nn.BatchNorm2d(40, momentum=0.01, eps=1e-3),
+            nn.ELU(),
+            nn.Conv2d(40, 40, (1, 8), stride=1, padding='same'),
+            nn.BatchNorm2d(40, momentum=0.01, eps=1e-3),
+            nn.ELU(),
+            nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
+            nn.Dropout(p=0.5)
+        )
+        self.block_classifier = nn.Sequential(
+            nn.Flatten(),
+            nn.Dropout(p=0.5),
+            nn.Linear(self.input_window_size // 8 * self.n_channels * 40, 64),
+            nn.Linear(64, self.n_classes),
+            nn.LogSoftmax(dim=1)
+        )
+
+    def forward(self, x):
+        x = transpose_to_4d_input(x)
+        x = self.block_conv(x)
+        x = self.block_classifier(x)
+        return x
+
+
+class ASGCNN(nn.Module):
+    def __init__(self, n_channels, n_classes, input_window_size, kernel_length=8, drop_prob=0.5):
+        super(ASGCNN, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.input_windows_size = input_window_size
@@ -200,12 +231,12 @@ class ST_GCN(nn.Module):
         # num of kernels: 8(1,8) 16(1,8) 16 p=0.5 p=0.6 16 88.41%
         # num of kernels: 8(1,8) 32(1,8) 32 p=0.5 p=0.6 32 87.95%
         self.block_conv = nn.Sequential(
-            nn.Conv2d(1, 8, (1, 8), stride=1, padding='same'),
+            nn.Conv2d(1, 8, (1, self.kernel_length), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 8), stride=(1, 8)),
 
-            nn.Conv2d(8, 16, (1, 8), stride=1, padding='same'),
+            nn.Conv2d(8, 16, (1, self.kernel_length), stride=1, padding='same'),
             nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(1, 4), stride=(1, 4)),
@@ -234,13 +265,13 @@ class ST_GCN(nn.Module):
         return x
 
 
-class ST_GCN_TEST(nn.Module):
+class STGCN(nn.Module):
     """Reference: ST-GNN for EEG Motor Imagery Classification(https://ieeexplore.ieee.org/document/9926806)
 
     """
 
     def __init__(self, n_channels, n_classes, input_window_size, kernel_length=15, drop_prob=0.5):
-        super(ST_GCN_TEST, self).__init__()
+        super(STGCN, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.input_windows_size = input_window_size

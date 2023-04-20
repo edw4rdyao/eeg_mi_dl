@@ -61,7 +61,7 @@ def bci2a(args, config):
         model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
                                    input_window_samples=input_window_samples, kernel_length=64, drop_prob=0.5)
     elif args.model == 'ST_GCN':
-        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
+        model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                  kernel_length=64)
     elif args.model == 'EEGNetRp':
         model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
