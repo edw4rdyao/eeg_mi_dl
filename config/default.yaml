@@ -5,7 +5,7 @@ dataset:
   n_classes: 4
   channels: ~
 fit:
-  seed: 20233202
+  seed: 2023
   epochs: 200
   lr: 0.001
   batch_size: 64

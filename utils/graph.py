@@ -53,10 +53,9 @@ def get_edges(dataset):
     return edges
 
 
-def get_electrode_importance(model):
-    trained_model_param = model.state_dict()
-    importance = trained_model_param['importance']
-    adjacency = trained_model_param['adjacency']
+def get_electrode_importance(model_param):
+    importance = model_param['importance']
+    adjacency = model_param['adjacency']
     importance = (importance * adjacency).cpu().numpy()
     importance = numpy.absolute(importance)
     print(importance)

@@ -114,4 +114,4 @@ def physionet(args, config):
     test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
     clf.fit(X=train_set, y=None, epochs=n_epochs)
-    # get_electrode_importance(clf.module)
+    # get_electrode_importance(clf.module.state_dict())

@@ -192,13 +192,12 @@ class BASECNN(nn.Module):
 
 
 class ASGCNN(nn.Module):
-    def __init__(self, n_channels, n_classes, input_window_size, graph_strategy='AG', kernel_length=8, drop_prob=0.5):
+    def __init__(self, n_channels, n_classes, input_window_size, graph_strategy='AG', kernel_length=8):
         super(ASGCNN, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.input_windows_size = input_window_size
         self.kernel_length = kernel_length
-        self.drop_prob = drop_prob
         self.graph_strategy = graph_strategy
 
         adjacency = get_adjacency_matrix(self.n_channels, 'full')
@@ -237,7 +236,7 @@ class ASGCNN(nn.Module):
         self.block_gcn = GraphConvolution(self.input_windows_size // 32, self.input_windows_size // 32)
 
         self.block_classifier = nn.Sequential(
-            nn.Conv2d(16, 16, (self.n_channels, 1), stride=1, bias=False, padding='same', groups=8),
+            nn.Conv2d(16, 16, (self.n_channels, 1), stride=1, padding='same', groups=8),
             nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),
