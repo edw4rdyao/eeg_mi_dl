@@ -48,7 +48,7 @@ def physionet(args, config):
     ds.uniform_duration(4.0)
     ds.drop_last_annotation()
     ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
-                          low_freq=config['dataset']['low_freq'])
+                          low_freq=config['dataset']['low_freq'], picked_channels=config['dataset']['channels'])
     channels_name = ds.get_channels_name()
     print(channels_name)
     n_classes = config['dataset']['n_classes']
@@ -96,7 +96,8 @@ def physionet(args, config):
     batch_size = config['fit']['batch_size']
     callbacks = ["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))]
     if args.save:
-        callbacks.append(Checkpoint(dirname=args.save_dir))
+        callbacks.append(Checkpoint(monitor='valid_accuracy_best', dirname=args.save_dir,
+                                    f_params='{last_epoch[valid_accuracy]}.pt'))
     clf = EEGClassifier(module=model,
                         iterator_train__shuffle=True,
                         criterion=torch.nn.CrossEntropyLoss,
@@ -112,6 +113,5 @@ def physionet(args, config):
     train_set = _get_subjects_datasets(dataset_split_by_subject, train_subjects, n_classes)
     test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
-    # get_electrode_importance(clf.module)
     clf.fit(X=train_set, y=None, epochs=n_epochs)
     # get_electrode_importance(clf.module)

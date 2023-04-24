@@ -6,13 +6,10 @@ from braindecode.augmentation import AugmentedDataLoader, SignFlip, FrequencyShi
 from skorch.helper import predefined_split, SliceDataset
 from skorch.callbacks import LRScheduler, Checkpoint
 from skorch import NeuralNetClassifier
-import numpy as np
 import moabb
 from moabb.evaluations import CrossSessionEvaluation, WithinSessionEvaluation, CrossSubjectEvaluation
 from moabb.paradigms import MotorImagery
 from mne.decoding import CSP
-from pyriemann.estimation import Covariances
-from pyriemann.tangentspace import TangentSpace
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.pipeline import make_pipeline
 from utils import get_augmentation_transform

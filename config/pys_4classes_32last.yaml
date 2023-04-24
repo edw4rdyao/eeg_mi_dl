@@ -1,0 +1,14 @@
+dataset:
+  resample: ~
+  high_freq: ~
+  low_freq: ~
+  n_classes: 4
+  channels: ['P5', 'CP2', 'P6', 'CP3', 'AF8', 'F5', 'F7', 'FC2', 'P8', 'Fz', 'F4', 'C5', 'P7', 'C3','CP6', 'C4', 'T8',
+             'FC4', 'F1', 'F3', 'FC6','P2', 'T7', 'FC5', 'AF4', 'Iz', 'POz', 'O1','FCz', 'TP7', 'CP1', 'C2']
+fit:
+  seed: 20040404
+  epochs: 200
+  lr: 0.001
+  batch_size: 64
+model:
+  graph_strategy: AG
