@@ -2,19 +2,14 @@ import dataset_loader
 from braindecode import EEGClassifier
 from braindecode.util import set_random_seeds
 import torch
-from torch import nn, optim
 from braindecode.augmentation import AugmentedDataLoader, SignFlip, FrequencyShift
 from skorch.helper import predefined_split, SliceDataset
 from skorch.callbacks import LRScheduler, Checkpoint
 from skorch import NeuralNetClassifier
-from sklearn.model_selection import KFold, cross_val_score
-import numpy as np
 import moabb
 from moabb.evaluations import CrossSessionEvaluation, WithinSessionEvaluation, CrossSubjectEvaluation
 from moabb.paradigms import MotorImagery
 from mne.decoding import CSP
-from pyriemann.estimation import Covariances
-from pyriemann.tangentspace import TangentSpace
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis as LDA
 from sklearn.pipeline import make_pipeline
 from utils import get_augmentation_transform
@@ -59,22 +54,18 @@ def bci2a(args, config):
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
     n_classes = config['dataset']['n_classes']
-    model = None
     if args.model == 'EEGNet':
         model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
                                    input_window_samples=input_window_samples, kernel_length=64, drop_prob=0.5)
-    elif args.model == 'ST_GCN':
-        model = nn_models.ST_GCN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 kernel_length=64)
-    elif args.model == 'EEGNetRp':
         model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
                                    kernel_length=64, drop_p=0.5)
-    # model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                          kernel_length=32)
-    # model = nn_models.EEGNetGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                             kernel_length=64)
-    # model = nn_models.GCNEEGNet(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
-    #                             kernel_length=64)
+    elif args.model == 'ASGCNN':
+        model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples)
+    elif args.model == 'ASTGCN':
+        model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
+                                 kernel_length=32)
+    else:
+        raise ValueError(f"model {args.model} is not supported on this dataset.")
     if cuda:
         model.cuda()
     summary(model, (1, n_channels, input_window_samples, 1))
@@ -82,12 +73,16 @@ def bci2a(args, config):
     lr = config['fit']['lr']
     batch_size = config['fit']['batch_size']
 
+    callbacks = ["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))]
+    if args.save:
+        callbacks.append(Checkpoint(dirname=args.save_dir))
     clf = EEGClassifier(module=model,
-                        criterion=torch.nn.CrossEntropyLoss, optimizer=torch.optim.Adam, train_split=None,
-                        optimizer__lr=lr, batch_size=batch_size,
-                        callbacks=["accuracy",
-                                   ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1)),
-                                   Checkpoint(dirname=args.save_dir)],
+                        criterion=torch.nn.CrossEntropyLoss,
+                        optimizer=torch.optim.Adam,
+                        train_split=None,
+                        optimizer__lr=lr,
+                        batch_size=batch_size,
+                        callbacks=callbacks,
                         device='cuda' if cuda else 'cpu'
                         )
     if args.strategy == 'within-subject':

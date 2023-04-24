@@ -24,7 +24,7 @@ You can find more contents of this library through the following sections:
 
 This list of papers currently includes the following areas (being updated):
 
-- [Motor Imagery](#motor-imagery--mi-)
+- [Motor Imagery](#motor-imagerymi)
 - [Public Datasets](#public-datasets)
 
 ### Motor imagery(MI)
@@ -85,4 +85,6 @@ List of the most frequently used public datasets in the papers
 
 ## Experiments
 
-Building Now :=(
+### How to run experiments
+
+ 

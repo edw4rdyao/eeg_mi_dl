@@ -1,0 +1,13 @@
+dataset:
+  resample: ~
+  high_freq: ~
+  low_freq: ~
+  n_classes: 4
+  channels: ~
+fit:
+  seed: 20233202
+  epochs: 200
+  lr: 0.001
+  batch_size: 64
+model:
+  graph_strategy: AG
