@@ -236,7 +236,7 @@ class ASGCNN(nn.Module):
         self.block_gcn = GraphConvolution(self.input_windows_size // 32, self.input_windows_size // 32)
 
         self.block_classifier = nn.Sequential(
-            nn.Conv2d(16, 16, (self.n_channels, 1), stride=1, padding='same', groups=8),
+            nn.Conv2d(16, 16, (self.n_channels, 1), bias=False, stride=1, padding='same', groups=8),
             nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),

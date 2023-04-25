@@ -2,6 +2,7 @@ import os
 import yaml
 import json
 from torch import nn
+from skorch.callbacks import Callback
 
 
 def read_yaml(path):
@@ -42,3 +43,12 @@ def init_weight_bias(model):
         if hasattr(module, "bias"):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
+
+
+class SaveHistory(Callback):
+    def __init__(self, file_path):
+        self.file_path = file_path
+
+    def on_train_end(self, net, **kwargs):
+        history = net.history
+        history.to_file(self.file_path + 'all_history.json')

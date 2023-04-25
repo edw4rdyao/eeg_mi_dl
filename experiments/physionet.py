@@ -6,6 +6,7 @@ from skorch.helper import predefined_split
 from skorch.callbacks import LRScheduler, Checkpoint
 import moabb
 import nn_models
+import utils
 from nn_models import cuda
 from torchinfo import summary
 from torch.utils.data import ConcatDataset
@@ -98,6 +99,9 @@ def physionet(args, config):
     if args.save:
         callbacks.append(Checkpoint(monitor='valid_accuracy_best', dirname=args.save_dir,
                                     f_params='{last_epoch[valid_accuracy]}.pt'))
+        callbacks.append(("save_history", utils.SaveHistory(args.save_dir)))
+    if args.selection:
+        callbacks.append(("get_electrode_importance", utils.GetElectrodeImportance()))
     clf = EEGClassifier(module=model,
                         iterator_train__shuffle=True,
                         criterion=torch.nn.CrossEntropyLoss,
@@ -114,4 +118,3 @@ def physionet(args, config):
     test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
     clf.fit(X=train_set, y=None, epochs=n_epochs)
-    # get_electrode_importance(clf.module.state_dict())

@@ -1,5 +1,6 @@
 import torch
 import numpy
+from skorch.callbacks import Callback
 
 
 def get_adjacency_matrix(n_electrodes, mode):
@@ -84,7 +85,8 @@ def get_electrode_importance(model_param):
         last32_electrode_name.append(electrode_name[j])
     print("top32 node", top32_electrode_name)
     print("last32 node", last32_electrode_name)
-    #
+
+    # edge selection
     # edge_importance_index = numpy.argsort(-importance.flatten())
     # edge_top_electrode_name = []
     # for index in edge_importance_index:
@@ -95,3 +97,11 @@ def get_electrode_importance(model_param):
     #     if electrode_name[j] not in edge_top_electrode_name:
     #         edge_top_electrode_name.append(electrode_name[j])
     # print("edge:", edge_top_electrode_name)
+
+
+class GetElectrodeImportance(Callback):
+    def on_train_begin(self, net, **kwargs):
+        get_electrode_importance(net.module.state_dict())
+
+    def on_train_end(self, net, **kwargs):
+        get_electrode_importance(net.module.state_dict())
