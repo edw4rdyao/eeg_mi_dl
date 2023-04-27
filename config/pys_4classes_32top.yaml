@@ -12,3 +12,5 @@ fit:
   batch_size: 64
 model:
   graph_strategy: AG
+  kernel_length_t: 8
+  bias_s: no

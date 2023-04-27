@@ -2,10 +2,10 @@ dataset:
   resample: ~
   high_freq: ~
   low_freq: ~
-  n_classes: 4
+  n_classes: 2
   channels: ~
 fit:
-  seed: 8888
+  seed: 3498
   epochs: 200
   lr: 0.001
   batch_size: 64

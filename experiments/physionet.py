@@ -77,9 +77,15 @@ def physionet(args, config):
                                    kernel_length=64, drop_p=0.5)
     elif args.model == 'ASGCNN':
         model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 graph_strategy=config['model']['graph_strategy'])
-        # model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
-        #                            input_window_samples=input_window_samples, final_conv_length='auto')
+                                 graph_strategy=config['model']['graph_strategy'],
+                                 kernel_length=config['model']['kernel_length_t'],
+                                 bias_s=config['model']['bias_s'])
+    elif args.model == 'ShallowConv':
+        model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=n_classes,
+                                          input_window_samples=input_window_samples, final_conv_length='auto')
+    elif args.model == 'DeepConv':
+        model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
+                                   input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)

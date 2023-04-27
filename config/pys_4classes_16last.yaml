@@ -1,11 +1,12 @@
+
 dataset:
   resample: ~
   high_freq: ~
   low_freq: ~
   n_classes: 4
-  channels: ~
+  channels: ['C6', 'Fpz', 'Pz', 'T10', 'AFz', 'CP5', 'FC1', 'C1', 'F2', 'Oz', 'T9', 'CPz','Fp2', 'P4', 'Fp1', 'Cz']
 fit:
-  seed: 8888
+  seed: 20011025
   epochs: 200
   lr: 0.001
   batch_size: 64
