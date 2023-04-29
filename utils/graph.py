@@ -3,18 +3,22 @@ import numpy
 from skorch.callbacks import Callback
 
 
-def get_adjacency_matrix(n_electrodes, mode):
+def get_adjacency_matrix(n_electrodes, graph_strategy):
     adjacency = torch.zeros(n_electrodes, n_electrodes)
-    if mode == 'full':
+    if graph_strategy == 'CG':
         adjacency = torch.ones(n_electrodes, n_electrodes)
-    elif mode == 'dis':
-        edges = get_edges('bci2a')
-        for i, j in edges:
-            adjacency[i - 1][j - 1] = 1
-            adjacency[j - 1][i - 1] = 1
-        for i in range(n_electrodes):
-            adjacency[i][i] = 1
-    # adjacency = normalize_adjacency_matrix(adjacency)
+        adjacency = normalize_adjacency_matrix(adjacency)
+    elif graph_strategy == 'CG':
+        adjacency = torch.ones(n_electrodes, n_electrodes)
+    elif graph_strategy == 'DG':
+        # edges = get_edges('bci2a')
+        # for i, j in edges:
+        #     adjacency[i - 1][j - 1] = 1
+        #     adjacency[j - 1][i - 1] = 1
+        # for i in range(n_electrodes):
+        #     adjacency[i][i] = 1
+        adjacency = torch.ones(n_electrodes, n_electrodes)
+        adjacency = normalize_adjacency_matrix(adjacency)
     return adjacency
 
 
@@ -50,6 +54,10 @@ def get_edges(dataset):
             (19, 20), (19, 22),
             (20, 21), (20, 22),
             (21, 22)
+        ]
+    elif dataset == 'physionet':
+        edges = [
+
         ]
     return edges
 

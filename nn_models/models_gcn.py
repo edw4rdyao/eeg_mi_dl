@@ -199,8 +199,7 @@ class ASGCNN(nn.Module):
         self.input_windows_size = input_window_size
         self.kernel_length = kernel_length
         self.graph_strategy = graph_strategy
-
-        adjacency = get_adjacency_matrix(self.n_channels, 'full')
+        adjacency = get_adjacency_matrix(self.n_channels, self.graph_strategy)
         self.register_buffer('adjacency', adjacency)
         if self.graph_strategy == 'AG':
             self.importance = nn.Parameter(torch.randn(self.n_channels, self.n_channels))

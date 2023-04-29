@@ -3,7 +3,7 @@ dataset:
   high_freq: ~
   low_freq: ~
   n_classes: 4
-  channels: ['AF7', 'P3', 'P1', 'FC3', 'FT7', 'PO3', 'FT8', 'F8', 'O2', 'PO7', 'PO8', 'TP8', 'F6', 'PO4','CP4', 'AF3',
+  channels: ['AF7', 'P3', 'P1', 'FC3', 'FT7', 'PO3', 'FT8', 'F8', 'O2', 'PO7', 'PO8', 'TP8', 'F6', 'PO4', 'CP4', 'AF3',
              'C6', 'Fpz', 'Pz', 'T10', 'AFz', 'CP5', 'FC1', 'C1', 'F2', 'Oz', 'T9', 'CPz','Fp2', 'P4', 'Fp1', 'Cz']
 fit:
   seed: 20011025
