@@ -1,33 +1,41 @@
-# EEG Deep Learning
+# EEG Motor Imagery Deep Learning
 
-A research repository of deep learning on electroencephalographic signals(EEG), including eeg data processing(visualization & analysis), papers(research and summary), deep learning models(reproduction and experiments).
+A research repository of deep learning on electroencephalographic (EEG) for Motor imagery(MI), including eeg data 
+processing(visualization & analysis), papers(research and summary), deep learning models(reproduction and experiments).
 
 The experiments in this repository is based on the following open source libraries:
 
 - [MNE-Python](https://github.com/mne-tools/mne-python)
-    
-  MNE-Python is an open-source Python package for exploring, visualizing, and analyzing human neurophysiological data such as MEG, EEG, sEEG, ECoG, and more. It includes modules for data input/output, preprocessing, visualization, source estimation, time-frequency analysis, connectivity analysis, machine learning, and statistics.
+
+  MNE-Python is an open-source Python package for exploring, visualizing, and analyzing human neurophysiological data 
+such as MEG, EEG, sEEG, ECoG, and more. It includes modules for data input/output, preprocessing, visualization, source 
+estimation, time-frequency analysis, connectivity analysis, machine learning, and statistics.
+
 - [Moabb](https://github.com/NeuroTechX/moabb)
 
-  Moabb: Build a comprehensive benchmark of popular Brain-Computer Interface (BCI) algorithms applied on an extensive list of freely available EEG datasets.
+  Moabb: Build a comprehensive benchmark of popular Brain-Computer Interface (BCI) algorithms applied on an extensive 
+list of freely available EEG datasets.
+
 - [Braindecode](https://github.com/braindecode/braindecode)
 
-  Braindecode is an open-source Python toolbox for decoding raw electrophysiology brain data with deep learning models. It includes dataset fetchers, data preprocessing and visualization tools, as well as implementations of several deep learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
+  Braindecode is an open-source Python toolbox for decoding raw electrophysiology brain data with deep learning models. 
+It includes dataset fetchers, data preprocessing and visualization tools, as well as implementations of several deep 
+learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
 
-You can find more contents of this library through the following sections:
+You can find more contents of this repository through the following sections:
 
-- [Paper researching](#paper-researching)
-- [EEG data analysis and processing](#eeg-data-analysis-and-processing)
+- [Paper Researching](#paper-researching)
+- [EEG Data Analysis and Processing](#eeg-data-analysis-and-processing)
 - [Experiments](#experiments)
 
-## Paper researching
+## Paper Researching
 
 This list of papers currently includes the following areas (being updated):
 
-- [Motor Imagery](#motor-imagerymi)
+- [Awesome Paper](#awesome-paper)
 - [Public Datasets](#public-datasets)
 
-### Motor imagery(MI)
+### Awesome Paper
 
 | Title                                                                                                                                                               | Year | Auth                 | Citation(about) | Model    | Dataset             | Related                                                                                                                                                                                                                                            |
 |---------------------------------------------------------------------------------------------------------------------------------------------------------------------|------|----------------------|-----------------|----------|---------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
@@ -69,7 +77,7 @@ List of the most frequently used public datasets in the papers
 
 *For deep learning experiments, to easier downloading of datasets and faster data processing, it is recommended to use [Moabb dataset](http://moabb.neurotechx.com/docs/datasets.html#module-moabb.datasets) or [Braindecode dataset](https://braindecode.org/stable/generated/braindecode.datasets.BNCI2014001.html) to do experiments.*
 
-## EEG data analysis and processing
+## EEG Data Analysis and Processing
 
 - Data Load and Analysis
   
@@ -84,7 +92,3 @@ List of the most frequently used public datasets in the papers
   For details and code, please move to [data_processing.ipynb](./data_analysis_notebook_mne/data_processing.ipynb), for more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
 
 ## Experiments
-
-### How to run experiments
-
- 
