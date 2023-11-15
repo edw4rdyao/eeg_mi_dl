@@ -66,6 +66,7 @@ def get_electrode_importance(model_param):
     importance = model_param['importance']
     adjacency = model_param['adjacency']
     importance = (importance * adjacency).cpu().numpy()
+    importance_pre = importance
     importance = numpy.absolute(importance)
     print(importance)
     row, col = importance.shape
@@ -86,14 +87,16 @@ def get_electrode_importance(model_param):
     print(electrode_importance)
     top_electrode_index = numpy.argsort(-electrode_importance)
     top32_electrode_name = []
+    top32_electrode_ipt = []
     last32_electrode_name = []
     for i in top_electrode_index[:32]:
         top32_electrode_name.append(electrode_name[i])
+        top32_electrode_ipt.append(electrode_importance[i])
     for j in top_electrode_index[32:]:
         last32_electrode_name.append(electrode_name[j])
     print("top32 node", top32_electrode_name)
+    print("top32 ipt", top32_electrode_ipt)
     print("last32 node", last32_electrode_name)
-
     # edge selection
     # edge_importance_index = numpy.argsort(-importance.flatten())
     # edge_top_electrode_name = []
@@ -105,6 +108,7 @@ def get_electrode_importance(model_param):
     #     if electrode_name[j] not in edge_top_electrode_name:
     #         edge_top_electrode_name.append(electrode_name[j])
     # print("edge:", edge_top_electrode_name)
+    return importance_pre
 
 
 class GetElectrodeImportance(Callback):
