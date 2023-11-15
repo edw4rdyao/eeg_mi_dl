@@ -24,18 +24,18 @@ learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
 
 You can find more contents of this repository through the following sections:
 
-- [Paper Researching](#paper-researching)
+- [Paper Researching](#papers-researching)
 - [EEG Data Analysis and Processing](#eeg-data-analysis-and-processing)
 - [Experiments](#experiments)
 
-## Paper Researching
+## Papers Researching
 
-This list of papers currently includes the following areas (being updated):
+Paper Researching currently includes the following papers and datasets:
 
-- [Awesome Paper](#awesome-paper)
+- [Awesome Papers](#awesome-papers)
 - [Public Datasets](#public-datasets)
 
-### Awesome Paper
+### Awesome Papers
 
 <details>
 <summary>
@@ -43,8 +43,8 @@ This list of papers currently includes the following areas (being updated):
 <a href="https://pubmed.ncbi.nlm.nih.gov/28782865/">
 Deep learning with convolutional neural networks for EEG decoding and visualization
 </a>
-[<a href="https://github.com/robintibor/braindecode">source code</a>]
-[<a href="https://github.com/robintibor/braindecode">reproduce1</a>]
+[<a href="https://github.com/robintibor/braindecode"><b>source code</b></a>]
+[<a href="https://github.com/robintibor/braindecode"><b>reproduce1</b></a>]
 </summary>
 </details>
 
@@ -54,9 +54,9 @@ Deep learning with convolutional neural networks for EEG decoding and visualizat
 <a href="https://iopscience.iop.org/article/10.1088/1741-2552/aace8c">
 EEGNet: a compact convolutional neural network for EEG-based brain–computer interfaces
 </a>
-[<a href="https://github.com/vlawhern/arl-eegmodels">source code</a>]
-[<a href="https://github.com/braindecode/braindecode/tree/master/braindecode/models">reproduce1</a>]
-[<a href="https://colab.research.google.com/drive/1ANF8PwvtUPawTeQt4Uu4iwscpyhHBgvM">reproduce2</a>]
+[<a href="https://github.com/vlawhern/arl-eegmodels"><b>source code</b></a>]
+[<a href="https://github.com/braindecode/braindecode/tree/master/braindecode/models"><b>reproduce1</b></a>]
+[<a href="https://colab.research.google.com/drive/1ANF8PwvtUPawTeQt4Uu4iwscpyhHBgvM"><b>reproduce2</b></a>]
 </summary>
 </details>
 
@@ -75,7 +75,7 @@ Learning Temporal Information for Brain-Computer Interface Using Convolutional N
 <a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359">
 An end-to-end deep learning approach to MI-EEG signal classification for BCIs
 </a>
-[<a href="https://github.com/hauke-d/cnn-eeg">source code</a>]
+[<a href="https://github.com/hauke-d/cnn-eeg"><b>source code</b></a>]
 </summary>
 </details>
 
@@ -85,7 +85,7 @@ An end-to-end deep learning approach to MI-EEG signal classification for BCIs
 <a href="https://arxiv.org/abs/2004.00077">
 An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Edge Computing
 </a>
-[<a href="https://github.com/MHersche/eegnet-based-embedded-bci">source code</a>]
+[<a href="https://github.com/MHersche/eegnet-based-embedded-bci"><b>source code</b></a>]
 </summary>
 </details>
 
@@ -95,8 +95,8 @@ An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Ed
 <a href="https://arxiv.org/abs/2006.00622">
 EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery Brain-Machine Interfaces
 </a>
-[<a href="https://github.com/iis-eth-zurich/eeg-tcnet">source code</a>]
-[<a href="https://github.com/okbalefthanded/eeg-tcnet/blob/master/eeg_tcnet_colab.ipynb">reproduce1</a>]
+[<a href="https://github.com/iis-eth-zurich/eeg-tcnet"><b>source code</b></a>]
+[<a href="https://github.com/okbalefthanded/eeg-tcnet/blob/master/eeg_tcnet_colab.ipynb"><b>reproduce1</b></a>]
 </summary>
 </details>
 
@@ -106,7 +106,7 @@ EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery
 <a href="https://arxiv.org/abs/2104.01233">
 FBCNet: A Multi-view Convolutional Neural Network for Brain-Computer Interface
 </a>
-[<a href="https://github.com/ravikiran-mane/FBCNet">source code</a>]
+[<a href="https://github.com/ravikiran-mane/FBCNet"><b>source code</b></a>]
 </summary>
 </details>
 
@@ -122,6 +122,8 @@ List of the most frequently used public datasets in the papers
   Download link: [.gdf format](https://www.bbci.de/competition/iv/#dataset2a) or [.mat format](http://bnci-horizon-2020.eu/database/data-sets)
 
   ![](./static/bci2a.png)
+
+
 - Physionet([Physionet Dataset](https://physionet.org/content/eegmmidb/1.0.0/))
 
   Dataset description: [Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/)
