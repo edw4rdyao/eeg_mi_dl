@@ -1,5 +1,7 @@
 # EEG Motor Imagery Deep Learning
 
+[English](README.md) [中文](README.zh_CN.md)
+
 A research repository of deep learning on electroencephalographic (EEG) for Motor imagery(MI), including eeg data 
 processing(visualization & analysis), papers(research and summary), deep learning models(reproduction and experiments).
 
@@ -7,30 +9,30 @@ The experiments in this repository is based on the following open source librari
 
 - [MNE-Python](https://github.com/mne-tools/mne-python)
 
-  MNE-Python is an open-source Python package for exploring, visualizing, and analyzing human neurophysiological data 
+MNE-Python is an open-source Python package for exploring, visualizing, and analyzing human neurophysiological data 
 such as MEG, EEG, sEEG, ECoG, and more. It includes modules for data input/output, preprocessing, visualization, source 
 estimation, time-frequency analysis, connectivity analysis, machine learning, and statistics.
 
 - [Moabb](https://github.com/NeuroTechX/moabb)
 
-  Moabb: Build a comprehensive benchmark of popular Brain-Computer Interface (BCI) algorithms applied on an extensive 
+Moabb: Build a comprehensive benchmark of popular Brain-Computer Interface (BCI) algorithms applied on an extensive 
 list of freely available EEG datasets.
 
 - [Braindecode](https://github.com/braindecode/braindecode)
 
-  Braindecode is an open-source Python toolbox for decoding raw electrophysiology brain data with deep learning models. 
+Braindecode is an open-source Python toolbox for decoding raw electrophysiology brain data with deep learning models. 
 It includes dataset fetchers, data preprocessing and visualization tools, as well as implementations of several deep 
 learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
 
 You can find more contents of this repository through the following sections:
 
-- [Paper Researching](#papers-researching)
+- [Paper Researching](#field-researching)
 - [EEG Data Analysis and Processing](#eeg-data-analysis-and-processing)
 - [Experiments](#experiments)
 
-## Papers Researching
+## Field Researching
 
-Paper Researching currently includes the following papers and datasets:
+Field Researching currently includes the following papers and datasets:
 
 - [Awesome Papers](#awesome-papers)
 - [Public Datasets](#public-datasets)
@@ -110,20 +112,20 @@ List of the most frequently used public datasets in the papers
 
 - BCI IV 2a([BCI Competition IV](https://www.bbci.de/competition/iv/))
 
-  Dataset description: [BCI Competition 2008 – Graz data set A](https://www.bbci.de/competition/iv/desc_2a.pdf)
+Dataset description: [BCI Competition 2008 – Graz data set A](https://www.bbci.de/competition/iv/desc_2a.pdf)
   
-  Download link: [.gdf format](https://www.bbci.de/competition/iv/#dataset2a) or [.mat format](http://bnci-horizon-2020.eu/database/data-sets)
+Download link: [.gdf format](https://www.bbci.de/competition/iv/#dataset2a) or [.mat format](http://bnci-horizon-2020.eu/database/data-sets)
 
-  ![](./static/bci2a.png)
+![](./static/bci2a.png)
 
 
 - Physionet([Physionet Dataset](https://physionet.org/content/eegmmidb/1.0.0/))
 
-  Dataset description: [Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/)
+Dataset description: [Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/)
   
-  Download link: [.edf format](https://physionet.org/content/eegmmidb/1.0.0/)
+Download link: [.edf format](https://physionet.org/content/eegmmidb/1.0.0/)
 
-  ![](./static/physionet.png) [[Image reference](https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359)]
+![](./static/physionet.png) [[Image reference](https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359)]
 
 *For deep learning experiments, to easier downloading of datasets and faster data processing, it is recommended to use [Moabb dataset](http://moabb.neurotechx.com/docs/datasets.html#module-moabb.datasets) or [Braindecode dataset](https://braindecode.org/stable/generated/braindecode.datasets.BNCI2014001.html) to do experiments.*
 
@@ -131,14 +133,14 @@ List of the most frequently used public datasets in the papers
 
 - Data Load and Analysis
   
-  Using MNE-Python library with Jupyter Notebook to analyze demo EEG data of [BCI IV 2a](#public-datasets), including loading data, plotting signal, extracting events...
+Using MNE-Python library with Jupyter Notebook to analyze demo EEG data of [BCI IV 2a](#public-datasets), including loading data, plotting signal, extracting events...
 
-  For details and code, please move to [data_load_visualization.ipynb](./data_analysis_notebook_mne/data_load_visualization.ipynb), for more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
+For details and code, please move to [data_load_visualization.ipynb](./data_analysis_notebook_mne/data_load_visualization.ipynb), for more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
 
 - Data Processing
 
-  Using MNE-Python library with Jupyter Notebook to process demo EEG data of [BCI IV 2a](#public-datasets), including filtering, resampling, segmenting data ...
+Using MNE-Python library with Jupyter Notebook to process demo EEG data of [BCI IV 2a](#public-datasets), including filtering, resampling, segmenting data ...
 
-  For details and code, please move to [data_processing.ipynb](./data_analysis_notebook_mne/data_processing.ipynb), for more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
+For details and code, please move to [data_processing.ipynb](./data_analysis_notebook_mne/data_processing.ipynb), for more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
 
 ## Experiments
