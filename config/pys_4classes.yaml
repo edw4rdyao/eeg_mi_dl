@@ -2,7 +2,7 @@ dataset:
   resample: ~
   high_freq: ~
   low_freq: ~
-  n_classes: 2
+  n_classes: 4
   channels: ~
 fit:
   seed: 3498
@@ -10,6 +10,5 @@ fit:
   lr: 0.001
   batch_size: 64
 model:
-  graph_strategy: AG
   kernel_length_t: 8
   bias_s: no

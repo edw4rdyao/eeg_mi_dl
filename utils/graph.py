@@ -1,5 +1,5 @@
-import torch
 import numpy
+import torch
 from skorch.callbacks import Callback
 
 

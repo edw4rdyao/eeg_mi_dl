@@ -8,24 +8,6 @@ from braindecode.preprocessing import exponential_moving_standardize, preprocess
 from numpy import multiply
 
 
-def _load_bci2a_braindecode(subject_ids):
-    dataset_description = "Dataset IIa from BCI Competition IV: https://www.bbci.de/competition/iv/"
-    dataset_instance = MOABBDataset(dataset_name="BNCI2014001", subject_ids=subject_ids)
-    return dataset_instance, dataset_description
-
-
-def _load_physionet_braindecode(subject_ids):
-    dataset_description = "Physionet MI dataset: https://physionet.org/pn4/eegmmidb/"
-    dataset_instance = MOABBDataset(dataset_name="PhysionetMI", subject_ids=subject_ids)
-    return dataset_instance, dataset_description
-
-
-def _load_munich_braindecode(subject_ids):
-    dataset_description = "Motor imagery dataset from Grosse-Wentrup et al. 2009"
-    dataset_instance = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
-    return dataset_instance, dataset_description
-
-
 class DatasetFromBraindecode:
     def __init__(self, dataset_name, subject_ids):
         """get dataset instance from braindecode lib
@@ -40,11 +22,11 @@ class DatasetFromBraindecode:
         self.windows_dataset = None
         self.dataset_name = dataset_name
         if dataset_name == 'bci2a':
-            self.raw_dataset, self.description = _load_bci2a_braindecode(subject_ids)
+            self.raw_dataset = MOABBDataset(dataset_name="BNCI2014001", subject_ids=subject_ids)
         elif dataset_name == 'physionet':
-            self.raw_dataset, self.description = _load_physionet_braindecode(subject_ids)
+            self.raw_dataset = MOABBDataset(dataset_name="PhysionetMI", subject_ids=subject_ids)
         elif dataset_name == 'munich':
-            self.raw_dataset, self.description = _load_munich_braindecode(subject_ids)
+            self.raw_dataset = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
         else:
             raise ValueError(
                 "dataset:%s is not supported" % dataset_name
@@ -109,42 +91,6 @@ class DatasetFromBraindecode:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
         if picked_channels:
             preprocessors.append(Preprocessor('pick_channels', ch_names=picked_channels))
-        # 4 classes
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['AF7', 'P3', 'P1', 'FC3', 'FT7', 'PO3', 'FT8',
-        #                                                              'F8', 'O2', 'PO7', 'PO8', 'TP8', 'F6', 'PO4',
-        #                                                              'CP4', 'AF3', 'C6', 'Fpz', 'Pz', 'T10', 'AFz',
-        #                                                              'CP5', 'FC1', 'C1', 'F2', 'Oz', 'T9', 'CPz',
-        #                                                              'Fp2', 'P4', 'Fp1', 'Cz']))
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['P5', 'CP2', 'P6', 'CP3', 'AF8', 'F5', 'F7',
-        #                                                              'FC2', 'P8', 'Fz', 'F4', 'C5', 'P7', 'C3',
-        #                                                              'CP6', 'C4', 'T8', 'FC4', 'F1', 'F3', 'FC6',
-        #                                                              'P2', 'T7', 'FC5', 'AF4', 'Iz', 'POz', 'O1',
-        #                                                              'FCz', 'TP7', 'CP1', 'C2']))
-
-        # 3 classes
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['FT7', 'PO3', 'P1', 'TP8', 'P3', 'AF7', 'FC3',
-        #                                                              'O2', 'PO7', 'F6', 'FT8', 'C6', 'Fpz', 'F8',
-        #                                                              'AF3', 'PO8', 'Pz', 'AFz', 'CP5', 'PO4', 'T9',
-        #                                                              'FC1', 'C1', 'Cz', 'CPz', 'CP4', 'P4', 'F2',
-        #                                                              'Fp2', 'CP3', 'AF8', 'T10']))
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['Oz', 'P6', 'F7', 'F4', 'P5', 'CP6', 'C4', 'CP2',
-        #                                                              'FC2', 'P7', 'F5', 'Fz', 'C5', 'P2', 'Fp1',
-        #                                                              'F1', 'P8', 'C3', 'AF4', 'F3', 'T8', 'FC4',
-        #                                                              'FC5', 'Iz', 'T7', 'FCz', 'POz', 'FC6',
-        #                                                              'C2', 'O1', 'CP1', 'TP7']))
-
-        # 2 classes
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['FC3', 'P3', 'AF7', 'P1', 'PO3', 'TP8', 'PO4',
-        #                                                              'PO7', 'FT7', 'O2', 'C6', 'C1', 'PO8', 'FT8',
-        #                                                              'T10', 'Pz', 'CP4', 'P4', 'CP5', 'F6', 'AF3',
-        #                                                              'FC1', 'Fpz', 'CPz', 'AFz', 'F8', 'F2', 'Cz',
-        #                                                              'CP3', 'C4', 'Fp2', 'Fz']))
-        # preprocessors.append(Preprocessor('pick_channels', ch_names=['Oz', 'C5', 'P5', 'P6', 'FC2', 'CP2', 'CP6',
-        #                                                              'T9', 'P7', 'F4', 'F7', 'AF8', 'C3', 'P2',
-        #                                                              'AF4', 'FC4', 'P8', 'F5', 'POz', 'FC5', 'FCz',
-        #                                                              'F1', 'T8', 'Fp1', 'F3', 'CP1', 'Iz', 'C2',
-        #                                                              'O1', 'FC6', 'TP7', 'T7']))
-
         preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
         if low_freq or high_freq:
             preprocessors.append(Preprocessor('filter', l_freq=low_freq, h_freq=high_freq))

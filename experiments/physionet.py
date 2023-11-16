@@ -1,21 +1,22 @@
-import dataset_loader
-from braindecode import EEGClassifier
-from braindecode.util import set_random_seeds
-import torch
-from skorch.helper import predefined_split
-from skorch.callbacks import LRScheduler, Checkpoint
 import moabb
+import torch
+from braindecode import EEGClassifier
+from braindecode.models import EEGNetv4, ShallowFBCSPNet, Deep4Net
+from braindecode.util import set_random_seeds
+from skorch.callbacks import LRScheduler, Checkpoint
+from skorch.helper import predefined_split
+from torch.utils.data import ConcatDataset
+from torchinfo import summary
+
+import dataset_loader
 import nn_models
 import utils
 from nn_models import cuda
-from torchinfo import summary
-from torch.utils.data import ConcatDataset
-from utils import get_electrode_importance
 
 moabb.set_log_level("info")
 
 
-def _get_subject_split():
+def __get_subject_split():
     all_valid_subjects = []
     train_subjects = []
     test_subjects = []
@@ -29,7 +30,7 @@ def _get_subject_split():
     return all_valid_subjects, train_subjects, test_subjects
 
 
-def _get_subjects_datasets(dataset_split_by_subject, split_subject, n_classes):
+def __get_subjects_datasets(dataset_split_by_subject, split_subject, n_classes):
     if n_classes == 2:
         valid_dataset = []
         for i in split_subject:
@@ -43,8 +44,8 @@ def _get_subjects_datasets(dataset_split_by_subject, split_subject, n_classes):
 
 
 def physionet(args, config):
-    set_random_seeds(seed=20233202, cuda=cuda)
-    all_valid_subjects, _, _ = _get_subject_split()
+    set_random_seeds(seed=config['fit']['seed'], cuda=cuda)
+    all_valid_subjects, _, _ = __get_subject_split()
     ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
     ds.uniform_duration(4.0)
     ds.drop_last_annotation()
@@ -71,26 +72,19 @@ def physionet(args, config):
     n_channels = ds.get_channel_num()
     input_window_samples = ds.get_input_window_sample()
     if args.model == 'EEGNet':
-        # model = nn_models.EEGNetv4(in_chans=n_channels, n_classes=n_classes,
-        #                            input_window_samples=input_window_samples, kernel_length=128, drop_prob=0.5)
-        model = nn_models.EEGNetRp(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                   kernel_length=64, drop_p=0.5)
-    elif args.model == 'ASGCNN':
-        model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 graph_strategy=config['model']['graph_strategy'],
-                                 kernel_length=config['model']['kernel_length_t'],
-                                 bias_s=config['model']['bias_s'])
+        model = EEGNetv4(in_chans=n_channels, n_classes=n_classes,
+                         input_window_samples=input_window_samples, kernel_length=32, drop_prob=0.5)
     elif args.model == 'ShallowConv':
-        model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=n_classes,
-                                          input_window_samples=input_window_samples, final_conv_length='auto')
+        model = ShallowFBCSPNet(in_chans=n_channels, n_classes=n_classes,
+                                input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'DeepConv':
-        model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
-                                   input_window_samples=input_window_samples, final_conv_length='auto')
+        model = Deep4Net(in_chans=n_channels, n_classes=n_classes,
+                         input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)
-    elif args.model == 'BASECNN':
-        model = nn_models.BASECNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples)
+    elif args.model == 'BaseCNN':
+        model = nn_models.BaseCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples)
     else:
         raise ValueError(f"model {args.model} is not supported on this dataset.")
 
@@ -105,7 +99,6 @@ def physionet(args, config):
     if args.save:
         callbacks.append(Checkpoint(monitor='valid_accuracy_best', dirname=args.save_dir,
                                     f_params='{last_epoch[valid_accuracy]}.pt'))
-        callbacks.append(("save_history", utils.SaveHistory(args.save_dir)))
     if args.selection:
         callbacks.append(("get_electrode_importance", utils.GetElectrodeImportance()))
     clf = EEGClassifier(module=model,
@@ -119,8 +112,8 @@ def physionet(args, config):
                         device='cuda' if cuda else 'cpu'
                         )
     dataset_split_by_subject = windows_dataset.split('subject')
-    _, train_subjects, test_subjects = _get_subject_split()
-    train_set = _get_subjects_datasets(dataset_split_by_subject, train_subjects, n_classes)
-    test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
+    _, train_subjects, test_subjects = __get_subject_split()
+    train_set = __get_subjects_datasets(dataset_split_by_subject, train_subjects, n_classes)
+    test_set = __get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
     clf.fit(X=train_set, y=None, epochs=n_epochs)

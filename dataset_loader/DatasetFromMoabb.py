@@ -2,7 +2,6 @@
 Dataset from moabb lib. https://moabb.neurotechx.com/docs/index.html
 Encapsulate the operations
 """
-import moabb
 from moabb.datasets import BNCI2014001
 
 

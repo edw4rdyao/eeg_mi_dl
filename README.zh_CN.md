@@ -7,7 +7,7 @@
 本仓库的实验基于以下几个开源库及工具箱：
 
 - [MNE-Python](https://github.com/mne-tools/mne-python)
-  
+
 MNE-Python 是一个开源 Python 包，用于探索、可视化和分析人类神经生理学数据，例如 MEG、EEG、sEEG、ECoG 等。它包括数据输入/输出、预处理
 、可视化、源估计、时频分析、连通性分析、机器学习和统计等模块。
 
@@ -101,7 +101,6 @@ EEG、ECoG 和 MEG 分析的多种深度学习模型和数据增强的实现。
 </summary>
 </details>
 
-
 ### 公开数据集
 
 论文中最常用的脑电运动想象公开数据集：
@@ -109,40 +108,38 @@ EEG、ECoG 和 MEG 分析的多种深度学习模型和数据增强的实现。
 - BCI IV 2a([BCI Competition IV](https://www.bbci.de/competition/iv/))
 
 数据集描述: [BCI Competition 2008 – Graz data set A](https://www.bbci.de/competition/iv/desc_2a.pdf)
-  
-下载链接: [.gdf 格式](https://www.bbci.de/competition/iv/#dataset2a) 
+
+下载链接: [.gdf 格式](https://www.bbci.de/competition/iv/#dataset2a)
 或者 [.mat 格式](http://bnci-horizon-2020.eu/database/data-sets)
 
 ![](./static/bci2a.png)
 
-
 - Physionet([Physionet Dataset](https://physionet.org/content/eegmmidb/1.0.0/))
 
 数据集描述:[Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/)
-  
+
 下载链接: [.edf 格式](https://physionet.org/content/eegmmidb/1.0.0/)
 
 ![](./static/physionet.png) [[图片参考](https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359)]
 
-*为了快速下载和预处理数据集建议使用第三方库 
-[Moabb dataset](http://moabb.neurotechx.com/docs/datasets.html#module-moabb.datasets) 
+*为了快速下载和预处理数据集建议使用第三方库
+[Moabb dataset](http://moabb.neurotechx.com/docs/datasets.html#module-moabb.datasets)
 或者 [Braindecode dataset](https://braindecode.org/stable/generated/braindecode.datasets.BNCI2014001.html)来做实验*
 
 ## 脑电数据分析处理
 
 - 数据加载和分析
-  
+
 使用 MNE-Python 库和 Jupyter Notebook 分析[BCI IV 2a](#公开数据集)的演示脑电图数据，包括加载数据、绘制信号、提取事件等等。
 
-详细代码见[data_load_visualization.ipynb](./data_analysis_notebook_mne/data_load_visualization.ipynb), 
+详细代码见[data_load_visualization.ipynb](./data_analysis_notebook_mne/data_load_visualization.ipynb),
 更多示例见[MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html)。
-
 
 - 数据处理
 
 使用 MNE-Python 库和 Jupyter Notebook 处理 [BCI IV 2a](#公开数据集) 的演示脑电图数据，包括过滤、重采样、分割数据等等。
 
-详细代码见[data_processing.ipynb](./data_analysis_notebook_mne/data_processing.ipynb), 
+详细代码见[data_processing.ipynb](./data_analysis_notebook_mne/data_processing.ipynb),
 更多示例见 [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html)。
 
 ## 实验
