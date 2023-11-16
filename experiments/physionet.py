@@ -6,6 +6,7 @@ from skorch.helper import predefined_split
 from skorch.callbacks import LRScheduler, Checkpoint
 import moabb
 import nn_models
+import utils
 from nn_models import cuda
 from torchinfo import summary
 from torch.utils.data import ConcatDataset
@@ -76,9 +77,15 @@ def physionet(args, config):
                                    kernel_length=64, drop_p=0.5)
     elif args.model == 'ASGCNN':
         model = nn_models.ASGCNN(n_channels=n_channels, n_classes=n_classes, input_window_size=input_window_samples,
-                                 graph_strategy=config['model']['graph_strategy'])
-        # model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
-        #                            input_window_samples=input_window_samples, final_conv_length='auto')
+                                 graph_strategy=config['model']['graph_strategy'],
+                                 kernel_length=config['model']['kernel_length_t'],
+                                 bias_s=config['model']['bias_s'])
+    elif args.model == 'ShallowConv':
+        model = nn_models.ShallowFBCSPNet(in_chans=n_channels, n_classes=n_classes,
+                                          input_window_samples=input_window_samples, final_conv_length='auto')
+    elif args.model == 'DeepConv':
+        model = nn_models.Deep4Net(in_chans=n_channels, n_classes=n_classes,
+                                   input_window_samples=input_window_samples, final_conv_length='auto')
     elif args.model == 'ASTGCN':
         model = nn_models.ASTGCN(n_channels=n_channels, n_classes=4, input_window_size=input_window_samples,
                                  kernel_length=32)
@@ -98,6 +105,9 @@ def physionet(args, config):
     if args.save:
         callbacks.append(Checkpoint(monitor='valid_accuracy_best', dirname=args.save_dir,
                                     f_params='{last_epoch[valid_accuracy]}.pt'))
+        callbacks.append(("save_history", utils.SaveHistory(args.save_dir)))
+    if args.selection:
+        callbacks.append(("get_electrode_importance", utils.GetElectrodeImportance()))
     clf = EEGClassifier(module=model,
                         iterator_train__shuffle=True,
                         criterion=torch.nn.CrossEntropyLoss,
@@ -114,4 +124,3 @@ def physionet(args, config):
     test_set = _get_subjects_datasets(dataset_split_by_subject, test_subjects, n_classes)
     clf.train_split = predefined_split(test_set)
     clf.fit(X=train_set, y=None, epochs=n_epochs)
-    # get_electrode_importance(clf.module)

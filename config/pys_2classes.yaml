@@ -5,11 +5,11 @@ dataset:
   n_classes: 2
   channels: ~
 fit:
-  seed: 1234
+  seed: 3498
   epochs: 200
   lr: 0.001
   batch_size: 64
 model:
-  graph_strategy: DG
+  graph_strategy: AG
   kernel_length_t: 8
   bias_s: no

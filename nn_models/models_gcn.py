@@ -192,35 +192,17 @@ class BASECNN(nn.Module):
 
 
 class ASGCNN(nn.Module):
-    def __init__(self, n_channels, n_classes, input_window_size, graph_strategy='AG', kernel_length=8, drop_prob=0.5):
+    def __init__(self, n_channels, n_classes, input_window_size, graph_strategy='AG', kernel_length=8, bias_s=False):
         super(ASGCNN, self).__init__()
         self.n_channels = n_channels
         self.n_classes = n_classes
         self.input_windows_size = input_window_size
         self.kernel_length = kernel_length
-        self.drop_prob = drop_prob
         self.graph_strategy = graph_strategy
-
-        adjacency = get_adjacency_matrix(self.n_channels, 'full')
+        adjacency = get_adjacency_matrix(self.n_channels, self.graph_strategy)
         self.register_buffer('adjacency', adjacency)
         if self.graph_strategy == 'AG':
             self.importance = nn.Parameter(torch.randn(self.n_channels, self.n_channels))
-        # class: 4 time windows:[-1, 1] p=0.5 p=0.6
-        # num of kernels: 8(1,8) 16(1,16) 16 66.17%
-        # num of kernels: 8(1,16) 16(1,16) 16 66.74%
-        # num of kernels: 8(1,8) 16(1,8) 16 66.86%
-        # num of kernels: 8(1,8) 32(1,8) 32 67.20%
-
-        # class: 3 time windows:[-1, 1]
-        # num of kernels: 8(1,6) 16(1,16) 16 75.55%
-        # num of kernels: 8(1,16) 16(1,16) 16 75.85%
-        # num of kernels: 8(1,8) 16(1,8) 16 p=0.5 p=0.6 16 76.00%
-        # num of kernels: 8(1,8) 32(1,8) 32 p=0.5 p=0.6 32 75.62%
-
-        # class: 2 time windows:[-1, 1]
-        # num of kernels: 8(1,16) 16(1,16) 16 88.52%
-        # num of kernels: 8(1,8) 16(1,8) 16 p=0.5 p=0.6 16 88.41%
-        # num of kernels: 8(1,8) 32(1,8) 32 p=0.5 p=0.6 32 87.95%
         self.block_conv = nn.Sequential(
             nn.Conv2d(1, 8, (1, self.kernel_length), stride=1, padding='same'),
             nn.BatchNorm2d(8, momentum=0.01, eps=1e-3),
@@ -237,7 +219,7 @@ class ASGCNN(nn.Module):
         self.block_gcn = GraphConvolution(self.input_windows_size // 32, self.input_windows_size // 32)
 
         self.block_classifier = nn.Sequential(
-            nn.Conv2d(16, 16, (self.n_channels, 1), stride=1, bias=False, padding='same', groups=8),
+            nn.Conv2d(16, 16, (self.n_channels, 1), bias=bias_s, stride=1, padding='same', groups=8),
             nn.BatchNorm2d(16, momentum=0.01, eps=1e-3),
             nn.ELU(),
             nn.AvgPool2d(kernel_size=(self.n_channels, 1), stride=(self.n_channels, 1)),

@@ -1,19 +1,24 @@
 import torch
 import numpy
+from skorch.callbacks import Callback
 
 
-def get_adjacency_matrix(n_electrodes, mode):
+def get_adjacency_matrix(n_electrodes, graph_strategy):
     adjacency = torch.zeros(n_electrodes, n_electrodes)
-    if mode == 'full':
+    if graph_strategy == 'CG':
         adjacency = torch.ones(n_electrodes, n_electrodes)
-    elif mode == 'dis':
-        edges = get_edges('bci2a')
-        for i, j in edges:
-            adjacency[i - 1][j - 1] = 1
-            adjacency[j - 1][i - 1] = 1
-        for i in range(n_electrodes):
-            adjacency[i][i] = 1
-    # adjacency = normalize_adjacency_matrix(adjacency)
+        adjacency = normalize_adjacency_matrix(adjacency)
+    elif graph_strategy == 'CG':
+        adjacency = torch.ones(n_electrodes, n_electrodes)
+    elif graph_strategy == 'DG':
+        # edges = get_edges('bci2a')
+        # for i, j in edges:
+        #     adjacency[i - 1][j - 1] = 1
+        #     adjacency[j - 1][i - 1] = 1
+        # for i in range(n_electrodes):
+        #     adjacency[i][i] = 1
+        adjacency = torch.ones(n_electrodes, n_electrodes)
+        adjacency = normalize_adjacency_matrix(adjacency)
     return adjacency
 
 
@@ -50,14 +55,18 @@ def get_edges(dataset):
             (20, 21), (20, 22),
             (21, 22)
         ]
+    elif dataset == 'physionet':
+        edges = [
+
+        ]
     return edges
 
 
-def get_electrode_importance(model):
-    trained_model_param = model.state_dict()
-    importance = trained_model_param['importance']
-    adjacency = trained_model_param['adjacency']
+def get_electrode_importance(model_param):
+    importance = model_param['importance']
+    adjacency = model_param['adjacency']
     importance = (importance * adjacency).cpu().numpy()
+    importance_pre = importance
     importance = numpy.absolute(importance)
     print(importance)
     row, col = importance.shape
@@ -78,14 +87,17 @@ def get_electrode_importance(model):
     print(electrode_importance)
     top_electrode_index = numpy.argsort(-electrode_importance)
     top32_electrode_name = []
+    top32_electrode_ipt = []
     last32_electrode_name = []
     for i in top_electrode_index[:32]:
         top32_electrode_name.append(electrode_name[i])
+        top32_electrode_ipt.append(electrode_importance[i])
     for j in top_electrode_index[32:]:
         last32_electrode_name.append(electrode_name[j])
     print("top32 node", top32_electrode_name)
+    print("top32 ipt", top32_electrode_ipt)
     print("last32 node", last32_electrode_name)
-    #
+    # edge selection
     # edge_importance_index = numpy.argsort(-importance.flatten())
     # edge_top_electrode_name = []
     # for index in edge_importance_index:
@@ -96,3 +108,12 @@ def get_electrode_importance(model):
     #     if electrode_name[j] not in edge_top_electrode_name:
     #         edge_top_electrode_name.append(electrode_name[j])
     # print("edge:", edge_top_electrode_name)
+    return importance_pre
+
+
+class GetElectrodeImportance(Callback):
+    def on_train_begin(self, net, **kwargs):
+        get_electrode_importance(net.module.state_dict())
+
+    def on_train_end(self, net, **kwargs):
+        get_electrode_importance(net.module.state_dict())

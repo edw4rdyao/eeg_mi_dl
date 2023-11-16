@@ -1,0 +1,16 @@
+dataset:
+  resample: ~
+  high_freq: ~
+  low_freq: ~
+  n_classes: 3
+  channels: ['C5', 'P5', 'AF8', 'CP2', 'P7', 'Fp2', 'Fz', 'F7', 'CP3', 'P2', 'F4', 'CP6', 'FC2', 'P8', 'F3', 'CP1',
+             'T8', 'AF4', 'FC5', 'F5', 'C3', 'O1', 'FCz', 'Iz', 'FC4', 'F1', 'POz', 'FC6', 'C2', 'T7', 'Fp1', 'TP7']
+fit:
+  seed: 8888
+  epochs: 200
+  lr: 0.001
+  batch_size: 64
+model:
+  graph_strategy: AG
+  kernel_length_t: 8
+  bias_s: yes
