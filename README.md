@@ -40,9 +40,8 @@ Paper Researching currently includes the following papers and datasets:
 <details>
 <summary>
 2017 Schirrmeister et al.
-<a href="https://pubmed.ncbi.nlm.nih.gov/28782865/">
-Deep learning with convolutional neural networks for EEG decoding and visualization
-</a>
+<u><i>Deep learning with convolutional neural networks for EEG decoding and visualization</i></u>
+[<a href="https://onlinelibrary.wiley.com/doi/10.1002/hbm.23730"><b>paper link</b></a>]
 [<a href="https://github.com/robintibor/braindecode"><b>source code</b></a>]
 [<a href="https://github.com/robintibor/braindecode"><b>reproduce1</b></a>]
 </summary>
@@ -51,9 +50,8 @@ Deep learning with convolutional neural networks for EEG decoding and visualizat
 <details>
 <summary>
 2018 Lawhern et al.
-<a href="https://iopscience.iop.org/article/10.1088/1741-2552/aace8c">
-EEGNet: a compact convolutional neural network for EEG-based brain–computer interfaces
-</a>
+<u><i>EEGNet: a compact convolutional neural network for EEG-based brain–computer interfaces</i></u>
+[<a href="https://iopscience.iop.org/article/10.1088/1741-2552/aace8c"><b>paper link</b></a>]
 [<a href="https://github.com/vlawhern/arl-eegmodels"><b>source code</b></a>]
 [<a href="https://github.com/braindecode/braindecode/tree/master/braindecode/models"><b>reproduce1</b></a>]
 [<a href="https://colab.research.google.com/drive/1ANF8PwvtUPawTeQt4Uu4iwscpyhHBgvM"><b>reproduce2</b></a>]
@@ -63,18 +61,16 @@ EEGNet: a compact convolutional neural network for EEG-based brain–computer in
 <details>
 <summary>
 2018 Sakhavi et al.
-<a href="https://ieeexplore.ieee.org/document/8310961">
-Learning Temporal Information for Brain-Computer Interface Using Convolutional Neural Networks
-</a>
+<u><i>Learning Temporal Information for Brain-Computer Interface Using Convolutional Neural Networks</i></u>
+[<a href="https://ieeexplore.ieee.org/document/8310961"><b>paper link</b></a>]
 </summary>
 </details>
 
 <details>
 <summary>
 2019 Dose et al.
-<a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359">
-An end-to-end deep learning approach to MI-EEG signal classification for BCIs
-</a>
+<u><i>An end-to-end deep learning approach to MI-EEG signal classification for BCIs</i></u>
+[<a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359"><b>paper link</b></a>]
 [<a href="https://github.com/hauke-d/cnn-eeg"><b>source code</b></a>]
 </summary>
 </details>
@@ -82,9 +78,8 @@ An end-to-end deep learning approach to MI-EEG signal classification for BCIs
 <details>
 <summary>
 2020 Wang et al.
-<a href="https://arxiv.org/abs/2004.00077">
-An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Edge Computing
-</a>
+<u><i>An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Edge Computing</i></u>
+[<a href="https://ieeexplore.ieee.org/document/9137134"><b>paper link</b></a>]
 [<a href="https://github.com/MHersche/eegnet-based-embedded-bci"><b>source code</b></a>]
 </summary>
 </details>
@@ -92,9 +87,8 @@ An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Ed
 <details>
 <summary>
 2020 Ingolfsson et al.
-<a href="https://arxiv.org/abs/2006.00622">
-EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery Brain-Machine Interfaces
-</a>
+<u><i>EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery Brain-Machine Interfaces</i></u>
+[<a href="https://ieeexplore.ieee.org/document/9283028"><b>paper link</b></a>]
 [<a href="https://github.com/iis-eth-zurich/eeg-tcnet"><b>source code</b></a>]
 [<a href="https://github.com/okbalefthanded/eeg-tcnet/blob/master/eeg_tcnet_colab.ipynb"><b>reproduce1</b></a>]
 </summary>
@@ -103,9 +97,8 @@ EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery
 <details>
 <summary>
 2021 Mane et al.
-<a href="https://arxiv.org/abs/2104.01233">
-FBCNet: A Multi-view Convolutional Neural Network for Brain-Computer Interface
-</a>
+<u><i>A Multi-view CNN with Novel Variance Layer for Motor Imagery Brain Computer Interface</i></u>
+[<a href="https://ieeexplore.ieee.org/document/9175874"><b>paper link</b></a>]
 [<a href="https://github.com/ravikiran-mane/FBCNet"><b>source code</b></a>]
 </summary>
 </details>
