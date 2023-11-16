@@ -1,5 +1,7 @@
 # EEG Motor Imagery Deep Learning
 
+[English](README.md) [中文](README.zh_CN.md)
+
 A research repository of deep learning on electroencephalographic (EEG) for Motor imagery(MI), including eeg data 
 processing(visualization & analysis), papers(research and summary), deep learning models(reproduction and experiments).
 
@@ -24,13 +26,13 @@ learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
 
 You can find more contents of this repository through the following sections:
 
-- [Paper Researching](#papers-researching)
+- [Paper Researching](#field-researching)
 - [EEG Data Analysis and Processing](#eeg-data-analysis-and-processing)
 - [Experiments](#experiments)
 
-## Papers Researching
+## Field Researching
 
-Paper Researching currently includes the following papers and datasets:
+Field Researching currently includes the following papers and datasets:
 
 - [Awesome Papers](#awesome-papers)
 - [Public Datasets](#public-datasets)
