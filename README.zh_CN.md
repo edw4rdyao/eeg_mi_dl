@@ -4,7 +4,12 @@
 
 关于深度学习方法在**脑机接口中运动想象脑电数据分类**的应用，包括脑电信号处理（可视化和分析）、领域论文整理和总结、深度学习模型复现和实验。
 
-本仓库的实验基于以下几个开源库及工具箱：
+<details>
+<summary>
+本仓库的实验基于 <a href="https://github.com/mne-tools/mne-python">MNE-Python</a>，
+<a href="https://github.com/NeuroTechX/moabb">Moabb</a>，
+<a href="https://github.com/braindecode/braindecode">Braindecode</a>。
+</summary>
 
 - [MNE-Python](https://github.com/mne-tools/mne-python)
 
@@ -19,6 +24,8 @@ Moabb：建立流行脑机接口（BCI）算法的综合基准，应用于大量
 
 Braindecode 是一个开源 Python 工具箱，用于使用深度学习模型解码原始大脑数据。它包括数据集获取、数据预处理和可视化工具，以及用于
 EEG、ECoG 和 MEG 分析的多种深度学习模型和数据增强的实现。
+
+</details>
 
 您可以通过以下部分找到此仓库的更多内容：
 

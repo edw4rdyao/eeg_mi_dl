@@ -2,14 +2,12 @@ import moabb
 import torch
 from braindecode import EEGClassifier
 from braindecode.augmentation import AugmentedDataLoader
-from braindecode.models import EEGNetv4, ShallowFBCSPNet
+from braindecode.models import EEGNetv4, ShallowFBCSPNet, EEGConformer
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
 from braindecode.util import set_random_seeds
-from skorch.callbacks import LRScheduler, Checkpoint
-from skorch.helper import predefined_split
+from skorch.callbacks import LRScheduler
 from torch.nn import functional
-from torch.utils.data import ConcatDataset
 from torchinfo import summary
 
 import dataset_loader
@@ -19,67 +17,89 @@ from utils import get_augmentation_transform
 moabb.set_log_level("info")
 
 
-def bci2a(args, config):
-    set_random_seeds(seed=config['fit']['seed'], cuda=cuda)
-    ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
-    ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
-                          low_freq=config['dataset']['low_freq'])
-    windows_dataset = ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
-    n_channels = ds.get_channel_num()
-    input_window_samples = ds.get_input_window_sample()
-    n_classes = config['dataset']['n_classes']
-    if args.model == 'EEGNet':
-        model = EEGNetv4(in_chans=n_channels, n_classes=n_classes,
-                         input_window_samples=input_window_samples, kernel_length=32, drop_prob=0.5)
-    else:
-        raise ValueError(f"model {args.model} is not supported on this dataset.")
-    if cuda:
-        model.cuda()
-    summary(model, (1, n_channels, input_window_samples, 1))
-    n_epochs = config['fit']['epochs']
-    lr = config['fit']['lr']
-    batch_size = config['fit']['batch_size']
+class BCI2aExperiment:
+    def __init__(self, args, config):
+        self.ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
+        self.ds.preprocess_dataset(resample_freq=config['dataset']['resample'],
+                                   high_freq=config['dataset']['high_freq'],
+                                   low_freq=config['dataset']['low_freq'])
+        self.windows_dataset = self.ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
+        self.n_channels = self.ds.get_channel_num()
+        self.input_window_samples = self.ds.get_input_window_sample()
+        self.n_classes = config['dataset']['n_classes']
 
-    callbacks = ["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))]
+        self.n_epochs = config['fit']['epochs']
+        self.lr = config['fit']['lr']
+        self.batch_size = config['fit']['batch_size']
 
-    if args.save:
-        callbacks.append(Checkpoint(monitor="valid_accuracy_best", dirname=args.save_dir))
+        self.save = args.save
+        self.save_dir = args.save_dir
+        self.strategy = args.strategy
+        self.model_name = args.model
 
-    clf = EEGClassifier(module=model,
-                        criterion=torch.nn.CrossEntropyLoss,
-                        optimizer=torch.optim.Adam,
-                        train_split=None,
-                        optimizer__lr=lr,
-                        batch_size=batch_size,
-                        callbacks=callbacks,
-                        device='cuda' if cuda else 'cpu'
-                        )
-    if args.strategy == 'within-subject':
-        __within_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
-    elif args.strategy == 'cross-subject':
-        __cross_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)
-    else:
-        raise ValueError(f"strategy {args.model} is not supported on this dataset.")
+        if args.model == 'EEGNet':
+            self.model = EEGNetv4(n_chans=self.n_channels, n_outputs=self.n_classes,
+                                  n_times=self.input_window_samples, kernel_length=32, drop_prob=0.5)
+            summary(self.model, (1, self.n_channels, self.input_window_samples, 1))
+        elif args.model == 'EEGConformer':
+            self.model = EEGConformer(n_outputs=self.n_classes, n_chans=self.n_channels,
+                                      n_times=self.input_window_samples,
+                                      final_fc_length='auto', add_log_softmax=False)
+            summary(self.model, (1, self.n_channels, self.input_window_samples))
+        else:
+            raise ValueError(f"model {args.model} is not supported on this dataset.")
+        if cuda:
+            self.model.cuda()
 
+    def __get_classifier(self) -> EEGClassifier:
+        if self.model_name == 'EEGNet':
+            callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
+            return EEGClassifier(module=self.model,
+                                 criterion=torch.nn.CrossEntropyLoss,
+                                 optimizer=torch.optim.Adam,
+                                 optimizer__lr=self.lr,
+                                 train_split=None,
+                                 batch_size=self.batch_size,
+                                 callbacks=callbacks,
+                                 device='cuda' if cuda else 'cpu',
+                                 verbose=0
+                                 )
+        elif self.model_name == 'EEGConformer':
+            callbacks = []
+            return EEGClassifier(module=self.model,
+                                 criterion=torch.nn.CrossEntropyLoss,
+                                 optimizer=torch.optim.Adam,
+                                 optimizer__betas=(0.5, 0.999),
+                                 optimizer__lr=self.lr,
+                                 train_split=None,
+                                 batch_size=self.batch_size,
+                                 callbacks=callbacks,
+                                 device='cuda' if cuda else 'cpu'
+                                 )
 
-def __within_subject_experiment(windows_dataset, clf, n_epochs):
-    subjects_windows_dataset = windows_dataset.split('subject')
-    for subject, windows_dataset in subjects_windows_dataset.items():
-        split_by_session = windows_dataset.split('session')
-        train_set = split_by_session['session_T']
-        test_set = split_by_session['session_E']
-        clf.train_split = predefined_split(test_set)
-        clf.fit(train_set, y=None, epochs=n_epochs)
+    def __within_subject_experiment(self):
+        subjects_windows_dataset = self.windows_dataset.split('subject')
+        n_subjects = len(subjects_windows_dataset.items())
+        avg_accuracy = 0
+        for subject, windows_dataset in subjects_windows_dataset.items():
+            split_by_session = windows_dataset.split('session')
+            train_set = split_by_session['session_T']
+            test_set = split_by_session['session_E']
+            clf = self.__get_classifier()
+            clf.fit(train_set, y=None, epochs=self.n_epochs)
+            test_accuracy = clf.score(test_set, y=test_set.get_metadata().target)
+            avg_accuracy += test_accuracy
+            print(f"Subject{subject} test accuracy: {(test_accuracy * 100):.4f}%")
+        print(f"Average test accuracy: {(avg_accuracy / n_subjects * 100):.4f}%")
 
+    def __cross_subject_experiment(self):
+        pass
 
-def __cross_subject_experiment(windows_dataset, clf, n_epochs):
-    split_by_subject = windows_dataset.split('subject')
-    train_subjects = ['1', '2', '3', '4', '5', '6', '7', '8']
-    test_subjects = ['9']
-    train_set = ConcatDataset([split_by_subject[i] for i in train_subjects])
-    test_set = ConcatDataset([split_by_subject[i] for i in test_subjects])
-    clf.train_split = predefined_split(test_set)
-    clf.fit(train_set, y=None, epochs=n_epochs)
+    def run(self):
+        if self.strategy == 'within-subject':
+            self.__within_subject_experiment()
+        elif self.strategy == 'cross-subject':
+            self.__cross_subject_experiment()
 
 
 def bci2a_shallow_conv_net():
@@ -108,7 +128,6 @@ def bci2a_shallow_conv_net():
                         train_split=None, criterion=CroppedLoss, criterion__loss_function=functional.nll_loss,
                         optimizer=torch.optim.AdamW, optimizer__lr=lr,
                         optimizer__weight_decay=weight_decay, batch_size=batch_size,
-                        callbacks=["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
+                        callbacks=[("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))],
                         cropped=True, device='cuda' if cuda else 'cpu'
                         )
-    __within_subject_experiment(windows_dataset=windows_dataset, clf=clf, n_epochs=n_epochs)

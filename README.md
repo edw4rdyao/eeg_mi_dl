@@ -5,7 +5,12 @@
 A research repository of deep learning on electroencephalographic (EEG) for Motor imagery(MI), including eeg data
 processing(visualization & analysis), papers(research and summary), deep learning models(reproduction and experiments).
 
-The experiments in this repository is based on the following open source libraries:
+<details>
+<summary>
+The experiments in this repository are based on <a href="https://github.com/mne-tools/mne-python">MNE-Python</a>, 
+<a href="https://github.com/NeuroTechX/moabb">Moabb</a>,
+<a href="https://github.com/braindecode/braindecode">Braindecode</a>.
+</summary>
 
 - [MNE-Python](https://github.com/mne-tools/mne-python)
 
@@ -23,6 +28,8 @@ list of freely available EEG datasets.
 Braindecode is an open-source Python toolbox for decoding raw electrophysiology brain data with deep learning models.
 It includes dataset fetchers, data preprocessing and visualization tools, as well as implementations of several deep
 learning architectures and data augmentations for analysis of EEG, ECoG and MEG.
+
+</details>
 
 You can find more contents of this repository through the following sections:
 

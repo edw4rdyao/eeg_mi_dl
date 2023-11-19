@@ -95,9 +95,9 @@ def physionet(args, config):
     n_epochs = config['fit']['epochs']
     lr = config['fit']['lr']
     batch_size = config['fit']['batch_size']
-    callbacks = ["accuracy", ("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))]
+    callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=n_epochs - 1))]
     if args.save:
-        callbacks.append(Checkpoint(monitor='valid_accuracy_best', dirname=args.save_dir,
+        callbacks.append(Checkpoint(monitor='valid_acc_best', dirname=args.save_dir,
                                     f_params='{last_epoch[valid_accuracy]}.pt'))
     if args.selection:
         callbacks.append(("get_electrode_importance", utils.GetElectrodeImportance()))

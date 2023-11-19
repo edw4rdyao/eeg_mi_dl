@@ -5,7 +5,6 @@ Encapsulate the operations
 from braindecode.datasets import MOABBDataset
 from braindecode.preprocessing import create_windows_from_events
 from braindecode.preprocessing import exponential_moving_standardize, preprocess, Preprocessor
-from numpy import multiply
 
 
 class DatasetFromBraindecode:
@@ -91,12 +90,12 @@ class DatasetFromBraindecode:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
         if picked_channels:
             preprocessors.append(Preprocessor('pick_channels', ch_names=picked_channels))
-        preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
+        # preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
         if low_freq or high_freq:
             preprocessors.append(Preprocessor('filter', l_freq=low_freq, h_freq=high_freq))
         if resample_freq:
             preprocessors.append(Preprocessor('resample', sfreq=resample_freq))
-        preprocessors.append(Preprocessor(exponential_moving_standardize, factor_new=1e-3, init_block_size=1000))
+        preprocessors.append(Preprocessor(exponential_moving_standardize, factor_new=1e-3))
         preprocess(self.raw_dataset, preprocessors)
 
     def uniform_duration(self, mapping):
