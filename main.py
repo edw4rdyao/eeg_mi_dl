@@ -10,7 +10,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--dataset', type=str, default='bci2a', choices=['bci2a', 'physionet'])
     parser.add_argument('--model', type=str, default='EEGNet', choices=['EEGNet', 'ShallowConv',
-                                                                        'DeepConv', 'EEGConformer'])
+                                                                        'DeepConv', 'EEGConformer',
+                                                                        'ATCNet', 'EEGInception',
+                                                                        'EEGITNet'])
     parser.add_argument('--config', type=str, default='default')
     parser.add_argument('--strategy', type=str, default='within-subject',
                         choices=['cross-subject', 'within-subject'])
@@ -26,7 +28,7 @@ if __name__ == '__main__':
     args.save_dir = save_dir
     print(config)
     if args.save:
-        save_json2file(config, save_dir, 'config.json')
+        save_json2file(config, save_dir, f'{args.dataset}_{args.model}_config.json')
     # for every dataset
     if args.dataset == 'bci2a':
         exp = BCI2aExperiment(args=args, config=config)

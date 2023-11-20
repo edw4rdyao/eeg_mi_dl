@@ -2,7 +2,7 @@ import moabb
 import torch
 from braindecode import EEGClassifier
 from braindecode.augmentation import AugmentedDataLoader
-from braindecode.models import EEGNetv4, ShallowFBCSPNet, EEGConformer
+from braindecode.models import EEGNetv4, ShallowFBCSPNet, EEGConformer, ATCNet, EEGITNet
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
 from braindecode.util import set_random_seeds
@@ -25,8 +25,10 @@ class BCI2aExperiment:
                                    high_freq=config['dataset']['high_freq'],
                                    low_freq=config['dataset']['low_freq'])
         # clip to create window dataset
-        # self.windows_dataset = self.ds.create_windows_dataset(trial_start_offset_seconds=-0.5)
-        self.windows_dataset = self.ds.create_windows_dataset()
+        self.windows_dataset = self.ds.create_windows_dataset(
+            trial_start_offset_seconds=config['dataset']['start_offset'],
+            trial_stop_offset_seconds=config['dataset']['stop_offset']
+        )
         self.n_channels = self.ds.get_channel_num()
         self.input_window_samples = self.ds.get_input_window_sample()
         self.n_classes = config['dataset']['n_classes']
@@ -35,10 +37,12 @@ class BCI2aExperiment:
         self.lr = config['fit']['lr']
         self.batch_size = config['fit']['batch_size']
 
+        # user options
         self.save = args.save
         self.save_dir = args.save_dir
         self.strategy = args.strategy
         self.model_name = args.model
+        self.verbose = config['fit']['verbose']
 
         # load deep leaning model from braindecode(reproduce)
         if args.model == 'EEGNet':
@@ -48,7 +52,13 @@ class BCI2aExperiment:
         elif args.model == 'EEGConformer':
             self.model = EEGConformer(n_outputs=self.n_classes, n_chans=self.n_channels,
                                       n_times=self.input_window_samples,
-                                      final_fc_length='auto', add_log_softmax=False)
+                                      final_fc_length='auto', add_log_softmax=True)
+            summary(self.model, (1, self.n_channels, self.input_window_samples))
+        elif args.model == 'ATCNet':
+            self.model = ATCNet(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.input_window_samples)
+            summary(self.model, (1, self.n_channels, self.input_window_samples))
+        elif args.model == 'EEGITNet':
+            self.model = EEGITNet(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.input_window_samples)
             summary(self.model, (1, self.n_channels, self.input_window_samples))
         else:
             raise ValueError(f"model {args.model} is not supported on this dataset.")
@@ -56,7 +66,7 @@ class BCI2aExperiment:
             self.model.cuda()
 
     def __get_classifier(self):
-        # for different models, suit the training routines or other params in the origin paper or code for classifier
+        # for different models, suit the training routines or other params in the [origin paper or code] for classifier
         if self.model_name == 'EEGNet':
             callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
             return EEGClassifier(module=self.model,
@@ -80,6 +90,18 @@ class BCI2aExperiment:
                                  batch_size=self.batch_size,
                                  callbacks=callbacks,
                                  device='cuda' if cuda else 'cpu'
+                                 )
+        elif self.model_name == 'ATCNet' or self.model_name == 'EEGITNet':
+            callbacks = []
+            return EEGClassifier(module=self.model,
+                                 criterion=torch.nn.CrossEntropyLoss,
+                                 optimizer=torch.optim.Adam,
+                                 optimizer__lr=self.lr,
+                                 train_split=None,
+                                 batch_size=self.batch_size,
+                                 callbacks=callbacks,
+                                 device='cuda' if cuda else 'cpu',
+                                 verbose=self.verbose
                                  )
 
     def __within_subject_experiment(self):

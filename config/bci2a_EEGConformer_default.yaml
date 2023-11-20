@@ -1,13 +1,13 @@
 dataset:
   resample: ~
-  high_freq: ~
-  low_freq: ~
+  high_freq: 40
+  low_freq: 4
   n_classes: 4
   channels: ~
   start_offset: 0
   stop_offset: 0
 fit:
   verbose: 0
-  epochs: 600
-  lr: 0.001
-  batch_size: 64
+  epochs: 2000
+  lr: 0.0002
+  batch_size: 72
