@@ -11,11 +11,19 @@ def read_yaml(path):
         return config
 
 
-def save_config(config, save_dir):
+def save_json2file(json_, save_dir, save_filename):
     if not os.path.exists(save_dir):
         os.makedirs(save_dir)
-    with open(save_dir + 'config.json', "w") as f:
-        json.dump(config, f)
+    with open(save_dir + save_filename, "w") as f:
+        json.dump(json_, f)
+    return
+
+
+def save_str2file(str_, save_dir, save_filename):
+    if not os.path.exists(save_dir):
+        os.makedirs(save_dir)
+    with open(save_dir + save_filename, "w") as f:
+        f.write(str_)
     return
 
 

@@ -9,15 +9,6 @@ from braindecode.preprocessing import exponential_moving_standardize, preprocess
 
 class DatasetFromBraindecode:
     def __init__(self, dataset_name, subject_ids):
-        """get dataset instance from braindecode lib
-
-        Parameters
-        ----------
-        dataset_name : str
-            dataset name
-        subject_ids : list | None
-            dataset subjects list
-        """
         self.windows_dataset = None
         self.dataset_name = dataset_name
         if dataset_name == 'bci2a':
@@ -32,37 +23,15 @@ class DatasetFromBraindecode:
             )
 
     def get_sample_freq(self):
-        """get the sample frequency of dataset
-
-        Returns
-        -------
-        sfreq: int
-            the sample frequency of raw dataset, which is got from
-            mne.io.Raw object of dataset
-        """
         return self.raw_dataset.datasets[0].raw.info['sfreq']
 
     def get_channel_num(self):
-        """get channel nums of dataset
-
-        Returns
-        -------
-        n_channel: int
-            the channel num of dataset from raw dataset
-        """
         return self.raw_dataset[0][0].shape[0]
 
     def get_channels_name(self):
         return self.raw_dataset.datasets[0].raw.info['ch_names']
 
     def get_input_window_sample(self):
-        """
-
-        Returns
-        -------
-        input_window_sample: int
-
-        """
         if not self.windows_dataset:
             raise ValueError(
                 "dataset has not created windows dataset"
@@ -71,20 +40,7 @@ class DatasetFromBraindecode:
 
     def preprocess_dataset(self, pick_eeg=True, resample_freq=None, low_freq=None, high_freq=None,
                            picked_channels=None):
-        """
-
-        Parameters
-        ----------
-        pick_eeg
-        resample_freq
-        low_freq
-        high_freq
-        picked_channels
-
-        Returns
-        -------
-
-        """
+        # preprocess data using "braindecode.preprocessor"
         preprocessors = []
         if pick_eeg:
             preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
@@ -114,20 +70,7 @@ class DatasetFromBraindecode:
 
     def create_windows_dataset(self, trial_start_offset_seconds=0, trial_stop_offset_seconds=0, mapping=None,
                                window_size_samples=None, window_stride_samples=None):
-        """
-
-        Parameters
-        ----------
-        trial_start_offset_seconds
-        trial_stop_offset_seconds
-        mapping
-        window_size_samples
-        window_stride_samples
-
-        Returns
-        -------
-
-        """
+        # create trial data for training and test using "create_windows_from_events"
         sfreq = self.get_sample_freq()
         assert all([ds.raw.info['sfreq'] == sfreq for ds in self.raw_dataset.datasets])
         trial_start_offset_samples = int(trial_start_offset_seconds * sfreq)

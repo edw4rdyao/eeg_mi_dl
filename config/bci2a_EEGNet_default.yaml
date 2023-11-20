@@ -5,6 +5,6 @@ dataset:
   n_classes: 4
   channels: ~
 fit:
-  epochs: 500
+  epochs: 600
   lr: 0.001
   batch_size: 64
