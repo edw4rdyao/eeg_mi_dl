@@ -5,9 +5,9 @@ dataset:
   n_classes: 4
   channels: ~
   start_offset: 0
-  stop_offset: 0
+  stop_offset: -1
 fit:
   verbose: 1
-  epochs: 750
+  epochs: 600
   lr: 0.001
   batch_size: 64

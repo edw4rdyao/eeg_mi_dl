@@ -2,7 +2,7 @@ import moabb
 import torch
 from braindecode import EEGClassifier
 from braindecode.augmentation import AugmentedDataLoader
-from braindecode.models import EEGNetv4, ShallowFBCSPNet, EEGConformer, ATCNet, EEGITNet
+from braindecode.models import EEGNetv4, ShallowFBCSPNet, EEGConformer, ATCNet, EEGITNet, EEGInception
 from braindecode.models import to_dense_prediction_model, get_output_shape
 from braindecode.training import CroppedLoss
 from braindecode.util import set_random_seeds
@@ -60,6 +60,10 @@ class BCI2aExperiment:
         elif args.model == 'EEGITNet':
             self.model = EEGITNet(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.input_window_samples)
             summary(self.model, (1, self.n_channels, self.input_window_samples))
+        elif args.model == 'EEGInception':
+            self.model = EEGInception(n_chans=self.n_channels, n_outputs=self.n_classes,
+                                      n_times=self.input_window_samples)
+            summary(self.model, (1, self.n_channels, self.input_window_samples))
         else:
             raise ValueError(f"model {args.model} is not supported on this dataset.")
         if cuda:
@@ -77,7 +81,7 @@ class BCI2aExperiment:
                                  batch_size=self.batch_size,
                                  callbacks=callbacks,
                                  device='cuda' if cuda else 'cpu',
-                                 verbose=0
+                                 verbose=self.verbose
                                  )
         elif self.model_name == 'EEGConformer':
             callbacks = []
@@ -89,9 +93,10 @@ class BCI2aExperiment:
                                  train_split=None,
                                  batch_size=self.batch_size,
                                  callbacks=callbacks,
-                                 device='cuda' if cuda else 'cpu'
+                                 device='cuda' if cuda else 'cpu',
+                                 verbose=self.verbose
                                  )
-        elif self.model_name == 'ATCNet' or self.model_name == 'EEGITNet':
+        elif self.model_name == 'ATCNet' or self.model_name == 'EEGITNet' or self.model_name == 'EEGInception':
             callbacks = []
             return EEGClassifier(module=self.model,
                                  criterion=torch.nn.CrossEntropyLoss,
@@ -118,7 +123,7 @@ class BCI2aExperiment:
             clf = self.__get_classifier()
             # save the last epoch model for test
             if self.save:
-                clf.callbacks.append(TrainEndCheckpoint(dirname=self.save_dir+f'\\S{subject}'))
+                clf.callbacks.append(TrainEndCheckpoint(dirname=self.save_dir + f'\\S{subject}'))
             clf.fit(train_set, y=None, epochs=self.n_epochs)
             # calculate test accuracy for subject
             test_accuracy = clf.score(test_set, y=test_set.get_metadata().target)

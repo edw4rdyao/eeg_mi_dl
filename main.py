@@ -24,7 +24,7 @@ if __name__ == '__main__':
     # read config from json file
     config = read_yaml(f"{os.getcwd()}\\config\\{args.config}")
     # result save directory
-    save_dir = f"{os.getcwd()}\\save\\{args.dataset}\\{int(time.time())}\\"
+    save_dir = f"{os.getcwd()}\\save\\{args.dataset}\\{int(time.time())}_{args.dataset}_{args.model}\\"
     args.save_dir = save_dir
     print(config)
     if args.save:
