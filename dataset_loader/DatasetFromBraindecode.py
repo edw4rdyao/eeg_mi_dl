@@ -15,8 +15,8 @@ class DatasetFromBraindecode:
             self.raw_dataset = MOABBDataset(dataset_name="BNCI2014001", subject_ids=subject_ids)
         elif dataset_name == 'physionet':
             self.raw_dataset = MOABBDataset(dataset_name="PhysionetMI", subject_ids=subject_ids)
-        elif dataset_name == 'munich':
-            self.raw_dataset = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
+        # elif dataset_name == 'munich':
+        #     self.raw_dataset = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
         else:
             raise ValueError(
                 "dataset:%s is not supported" % dataset_name
