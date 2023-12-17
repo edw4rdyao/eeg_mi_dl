@@ -1,26 +1,12 @@
-"""
-Dataset based on braindecode lib. https://braindecode.org/stable/index.html
-Encapsulate the operations
-"""
-from braindecode.datasets import MOABBDataset
 from braindecode.preprocessing import create_windows_from_events
 from braindecode.preprocessing import exponential_moving_standardize, preprocess, Preprocessor
 
+from .DatasetEncap import DatasetEncap
 
-class DatasetFromBraindecode:
+
+class DatasetFromBraindecode(DatasetEncap):
     def __init__(self, dataset_name, subject_ids):
-        self.windows_dataset = None
-        self.dataset_name = dataset_name
-        if dataset_name == 'bci2a':
-            self.raw_dataset = MOABBDataset(dataset_name="BNCI2014001", subject_ids=subject_ids)
-        elif dataset_name == 'physionet':
-            self.raw_dataset = MOABBDataset(dataset_name="PhysionetMI", subject_ids=subject_ids)
-        # elif dataset_name == 'munich':
-        #     self.raw_dataset = MOABBDataset(dataset_name="MunichMI", subject_ids=subject_ids)
-        else:
-            raise ValueError(
-                "dataset:%s is not supported" % dataset_name
-            )
+        super().__init__(dataset_name, subject_ids)
 
     def get_sample_freq(self):
         return self.raw_dataset.datasets[0].raw.info['sfreq']
@@ -38,14 +24,12 @@ class DatasetFromBraindecode:
             )
         return self.windows_dataset[0][0].shape[1]
 
-    def preprocess_dataset(self, pick_eeg=True, resample_freq=None, low_freq=None, high_freq=None,
-                           picked_channels=None):
+    def preprocess(self, resample_freq=None, low_freq=None, high_freq=None, pick_channels=None):
         # preprocess data using "braindecode.preprocessor"
-        preprocessors = []
-        if pick_eeg:
-            preprocessors.append(Preprocessor('pick_types', eeg=True, meg=False, stim=False))
-        if picked_channels:
-            preprocessors.append(Preprocessor('pick_channels', ch_names=picked_channels))
+        # only use eeg(stim channels must be removed)
+        preprocessors = [Preprocessor('pick', picks=['eeg'])]
+        if pick_channels:
+            preprocessors.append(Preprocessor('pick', picks=pick_channels))
         # preprocessors.append(Preprocessor(lambda data: multiply(data, 1e6)))
         if low_freq or high_freq:
             preprocessors.append(Preprocessor('filter', l_freq=low_freq, h_freq=high_freq))
@@ -82,7 +66,6 @@ class DatasetFromBraindecode:
             window_size_samples=window_size_samples,
             window_stride_samples=window_stride_samples,
             preload=True,
-            drop_last_window=False,
             mapping=mapping
         )
         return self.windows_dataset

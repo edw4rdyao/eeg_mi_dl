@@ -112,6 +112,15 @@ Field Researching currently includes the following papers and datasets:
 </summary>
 </details>
 
+<details>
+<summary>
+2022 Hamdi Altaheri et al.
+<u><i>Physics-Informed Attention Temporal Convolutional Network for EEG-Based Motor Imagery Classification</i></u>
+[<a href="https://ieeexplore.ieee.org/document/9852687"><b>paper link</b></a>]
+[<a href="https://github.com/Altaheri/EEG-ATCNet"><b>source code</b></a>]
+</summary>
+</details>
+
 ### Public Datasets
 
 List of the most frequently used public datasets in the papers
@@ -159,3 +168,54 @@ For details and code, please move to [data_processing.ipynb](./data_analysis_not
 more examples, to [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html).
 
 ## Experiments
+
+This repo is based on `Python 3.8`. And before you run experiments of this repo, install the environment first:
+
+```shell
+$ pip install -r requirements.txt
+```
+
+Then you can use `-h` to get usage:
+```shell
+$ python .\main.py -h
+```
+```
+usage: main.py [-h] [--dataset {bci2a,physionet}] [--model {EEGNet,EEGConformer,ATCNet,EEGInception,EEGITNet}] [--config CONFIG] [--strategy {cross-subject,within-subject}] [--save]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --dataset {bci2a,physionet}
+                        data set used of the experiments
+  --model {EEGNet,EEGConformer,ATCNet,EEGInception,EEGITNet}
+                        model used of the experiments
+  --config CONFIG       config file name(.yaml format)
+  --strategy {cross-subject,within-subject}
+                        experiments strategy on subjects
+  --save                save the pytorch model and history
+```
+
+If you run experiments on dataset [BCI 2a](#public-datasets) using `EEGNet` model, simply run:
+
+```shell
+$ python .\main.py --dataset bci2a --model EEGNet
+```
+
+It will use the default config in [bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml) and 
+default `within-subject` strategy  , surely you can use `--config` to specify.
+
+Then you can get the output accuracy and `result.txt` in `./save` folder:
+
+```
+Subject1 test accuracy: 70.8333%
+Subject2 test accuracy: 56.2500%
+Subject3 test accuracy: 81.9444%
+Subject4 test accuracy: 70.8333%
+Subject5 test accuracy: 75.6944%
+Subject6 test accuracy: 67.7083%
+Subject7 test accuracy: 82.9861%
+Subject8 test accuracy: 67.0139%
+Subject9 test accuracy: 73.2639%
+Average test accuracy: 71.8364%
+```
+
+You can also make your own models and more config options to do experiments. 

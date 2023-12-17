@@ -49,8 +49,8 @@ def physionet(args, config):
     ds = dataset_loader.DatasetFromBraindecode('physionet', subject_ids=all_valid_subjects)
     ds.uniform_duration(4.0)
     ds.drop_last_annotation()
-    ds.preprocess_dataset(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
-                          low_freq=config['dataset']['low_freq'], picked_channels=config['dataset']['channels'])
+    ds.preprocess(resample_freq=config['dataset']['resample'], high_freq=config['dataset']['high_freq'],
+                  low_freq=config['dataset']['low_freq'], picked_channels=config['dataset']['channels'])
     channels_name = ds.get_channels_name()
     print(channels_name)
     n_classes = config['dataset']['n_classes']

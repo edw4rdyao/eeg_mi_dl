@@ -4,7 +4,7 @@ dataset:
   low_freq: ~
   n_classes: 4
   channels: ~
-  start_offset: 0
+  start_offset: -0.5
   stop_offset: 0
 fit:
   verbose: 0

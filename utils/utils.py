@@ -34,14 +34,6 @@ def transpose_to_4d_input(x):
 
 
 def init_weight_bias(model):
-    """Initialize parameters of all modules by initializing weights 1
-     uniform/xavier initialization, and setting biases to zero. Weights from
-     batch norm layers are set to 1.
-
-    Parameters
-    ----------
-    model: nn.Module
-    """
     for module in model.modules():
         if hasattr(module, "weight"):
             if not ("BatchNorm" in module.__class__.__name__):
