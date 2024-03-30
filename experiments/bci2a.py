@@ -3,15 +3,13 @@ from braindecode.models import EEGNetv4, EEGConformer, ATCNet, EEGITNet, EEGInce
 from skorch import NeuralNetClassifier
 from skorch.callbacks import LRScheduler, TrainEndCheckpoint
 from skorch.helper import SliceDataset
-from torchinfo import summary
 
 import dataset_loader
 from nn_models import cuda
-from utils import save_str2file
 
 
 class BCI2aExperiment:
-    def __init__(self, args, config):
+    def __init__(self, args, config, logger):
         # load and preprocess data using braindecode
         self.ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
         self.ds.preprocess(resample_freq=config['dataset']['resample'],
@@ -38,37 +36,19 @@ class BCI2aExperiment:
         self.model_name = args.model
         self.verbose = config['fit']['verbose']
 
-        # load deep leaning model from braindecode
-        if args.model == 'EEGNet':
-            self.model = EEGNetv4(n_chans=self.n_channels, n_outputs=self.n_classes,
-                                  n_times=self.n_times, kernel_length=32, drop_prob=0.5)
-            summary(self.model, (1, self.n_channels, self.n_times))
-        elif args.model == 'EEGConformer':
-            self.model = EEGConformer(n_outputs=self.n_classes, n_chans=self.n_channels, n_times=self.n_times,
-                                      final_fc_length='auto', add_log_softmax=False)
-            summary(self.model, (1, self.n_channels, self.n_times))
-        elif args.model == 'ATCNet':
-            self.model = ATCNet(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.n_times,
-                                add_log_softmax=False)
-            summary(self.model, (1, self.n_channels, self.n_times))
-        elif args.model == 'EEGITNet':
-            self.model = EEGITNet(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.n_times,
-                                  add_log_softmax=False)
-            summary(self.model, (1, self.n_channels, self.n_times))
-        elif args.model == 'EEGInception':
-            self.model = EEGInception(n_chans=self.n_channels, n_outputs=self.n_classes, n_times=self.n_times,
-                                      add_log_softmax=False)
-            summary(self.model, (1, self.n_channels, self.n_times))
-        else:
-            raise ValueError(f"model {args.model} is not supported on this dataset.")
-        if cuda:
-            self.model.cuda()
+        self.logger = logger
 
     def __get_classifier(self):
         # for different models, suit the training routines or other params in the [origin paper or code] for classifier
+        # NeuralNetClassifier is following skorch https://skorch.readthedocs.io/en/stable/user/neuralnet.html
+        callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
         if self.model_name == 'EEGNet':
-            callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
-            return NeuralNetClassifier(module=self.model,
+            return NeuralNetClassifier(module=EEGNetv4,
+                                       module__n_chans=self.n_channels,
+                                       module__n_outputs=self.n_classes,
+                                       module__n_times=self.n_times,
+                                       module__kernel_length=32,
+                                       module__drop_prob=0.5,
                                        criterion=torch.nn.CrossEntropyLoss,
                                        optimizer=torch.optim.Adam,
                                        optimizer__lr=self.lr,
@@ -79,10 +59,13 @@ class BCI2aExperiment:
                                        device='cuda' if cuda else 'cpu',
                                        verbose=self.verbose
                                        )
-
         elif self.model_name == 'EEGConformer':
-            callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
-            return NeuralNetClassifier(module=self.model,
+            return NeuralNetClassifier(module=EEGConformer,
+                                       module__n_chans=self.n_channels,
+                                       module__n_outputs=self.n_classes,
+                                       module__n_times=self.n_times,
+                                       module__final_fc_length='auto',
+                                       module__add_log_softmax=False,
                                        criterion=torch.nn.CrossEntropyLoss,
                                        optimizer=torch.optim.Adam,
                                        optimizer__betas=(0.5, 0.999),
@@ -94,9 +77,12 @@ class BCI2aExperiment:
                                        device='cuda' if cuda else 'cpu',
                                        verbose=self.verbose
                                        )
-        elif self.model_name == 'ATCNet' or self.model_name == 'EEGITNet' or self.model_name == 'EEGInception':
-            callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
-            return NeuralNetClassifier(module=self.model,
+        elif self.model_name == 'ATCNet':
+            return NeuralNetClassifier(module=ATCNet,
+                                       module__n_chans=self.n_channels,
+                                       module__n_outputs=self.n_classes,
+                                       module__n_times=self.n_times,
+                                       module__add_log_softmax=False,
                                        criterion=torch.nn.CrossEntropyLoss,
                                        optimizer=torch.optim.Adam,
                                        optimizer__lr=self.lr,
@@ -107,6 +93,40 @@ class BCI2aExperiment:
                                        device='cuda' if cuda else 'cpu',
                                        verbose=self.verbose
                                        )
+        elif self.model_name == 'EEGITNet':
+            return NeuralNetClassifier(module=EEGITNet,
+                                       module__n_chans=self.n_channels,
+                                       module__n_outputs=self.n_classes,
+                                       module__n_times=self.n_times,
+                                       module__add_log_softmax=False,
+                                       criterion=torch.nn.CrossEntropyLoss,
+                                       optimizer=torch.optim.Adam,
+                                       optimizer__lr=self.lr,
+                                       train_split=None,
+                                       iterator_train__shuffle=True,
+                                       batch_size=self.batch_size,
+                                       callbacks=callbacks,
+                                       device='cuda' if cuda else 'cpu',
+                                       verbose=self.verbose
+                                       )
+        elif self.model_name == 'EEGInception':
+            return NeuralNetClassifier(module=EEGInception,
+                                       module__n_chans=self.n_channels,
+                                       module__n_outputs=self.n_classes,
+                                       module__n_times=self.n_times,
+                                       module__add_log_softmax=False,
+                                       criterion=torch.nn.CrossEntropyLoss,
+                                       optimizer=torch.optim.Adam,
+                                       optimizer__lr=self.lr,
+                                       train_split=None,
+                                       iterator_train__shuffle=True,
+                                       batch_size=self.batch_size,
+                                       callbacks=callbacks,
+                                       device='cuda' if cuda else 'cpu',
+                                       verbose=self.verbose
+                                       )
+        else:
+            raise ValueError(f"model {self.model_name} is not supported on this dataset.")
 
     def __within_subject_experiment(self):
         #  split dataset for single subject
@@ -130,12 +150,8 @@ class BCI2aExperiment:
             # calculate test accuracy for subject
             test_accuracy = clf.score(test_X, y=test_y)
             avg_accuracy += test_accuracy
-            print(f"Subject{subject} test accuracy: {(test_accuracy * 100):.4f}%")
-            result += f"Subject{subject} test accuracy: {(test_accuracy * 100):.4f}%\n"
-        print(f"Average test accuracy: {(avg_accuracy / n_subjects * 100):.4f}%")
-        # save the result
-        result += f"Average test accuracy: {(avg_accuracy / n_subjects * 100):.4f}%"
-        save_str2file(result, self.save_dir, 'result.txt')
+            self.logger.info(f"Subject{subject} test accuracy: {(test_accuracy * 100):.4f}%")
+        self.logger.info(f"Average test accuracy: {(avg_accuracy / n_subjects * 100):.4f}%")
 
     def __cross_subject_experiment(self):
         pass

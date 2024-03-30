@@ -3,8 +3,7 @@ import os
 import time
 
 from experiments.bci2a import BCI2aExperiment
-from experiments.physionet import physionet
-from utils import read_yaml, save_json2file
+from utils import read_yaml, get_logger
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -24,14 +23,14 @@ if __name__ == '__main__':
     # read config from yaml file
     config = read_yaml(f"{os.getcwd()}\\config\\{args.config}")
     # result save directory
-    save_dir = f"{os.getcwd()}\\save\\{args.dataset}\\{int(time.time())}_{args.dataset}_{args.model}\\"
+    save_dir = f"{os.getcwd()}\\save\\{int(time.time())}_{args.dataset}_{args.model}\\"
     args.save_dir = save_dir
-    print(config)
-    if args.save:
-        save_json2file(config, save_dir, f'{args.dataset}_{args.model}_config.json')
+    logger = get_logger(save_result=True, save_dir=save_dir,
+                        save_file=f'{int(time.time())}_{args.dataset}_{args.model}_result.txt')
+    logger.info(config)
     # for every dataset
     if args.dataset == 'bci2a':
-        exp = BCI2aExperiment(args=args, config=config)
+        exp = BCI2aExperiment(args=args, config=config, logger=logger)
         exp.run()
     elif args.dataset == 'physionet':
         raise Warning('physionet experiments are developing.')

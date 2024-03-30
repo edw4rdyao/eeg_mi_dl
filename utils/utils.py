@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 
 import yaml
@@ -43,3 +44,25 @@ def init_weight_bias(model):
         if hasattr(module, "bias"):
             if module.bias is not None:
                 nn.init.constant_(module.bias, 0)
+
+
+def get_logger(save_result, save_dir, save_file):
+    logger = logging.getLogger()
+    logger.setLevel(logging.INFO)
+    formatter = logging.Formatter(fmt="[%(asctime)s] %(message)s", datefmt="%H:%M:%S %Y")
+
+    str_handler = logging.StreamHandler()
+    str_handler.setFormatter(formatter)
+
+    logger.addHandler(str_handler)
+
+    if save_result:
+        if not os.path.exists(save_dir):
+            os.makedirs(save_dir)
+
+        file_handler = logging.FileHandler(os.path.join(save_dir, save_file), mode='w')
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+
+    return logger
