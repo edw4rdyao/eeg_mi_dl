@@ -185,18 +185,16 @@ default `within-subject` strategy  , surely you can use `--config` to specify.
 Then you can get the output accuracy and `result.log` in `./save` folder:
 
 ```
-Subject1 test accuracy: 70.8333%
-Subject2 test accuracy: 56.2500%
-Subject3 test accuracy: 81.9444%
-Subject4 test accuracy: 70.8333%
-Subject5 test accuracy: 75.6944%
-Subject6 test accuracy: 67.7083%
-Subject7 test accuracy: 82.9861%
-Subject8 test accuracy: 67.0139%
-Subject9 test accuracy: 73.2639%
-Average test accuracy: 71.8364%
+[13:41:23 2024] Subject1 test accuracy: 70.4861%
+[13:42:06 2024] Subject2 test accuracy: 57.9861%
+[13:42:50 2024] Subject3 test accuracy: 79.5139%
+[13:43:33 2024] Subject4 test accuracy: 60.0694%
+[13:44:16 2024] Subject5 test accuracy: 70.8333%
+[13:45:00 2024] Subject6 test accuracy: 59.3750%
+[13:45:46 2024] Subject7 test accuracy: 69.0972%
+[13:46:30 2024] Subject8 test accuracy: 62.1528%
+[13:47:13 2024] Subject9 test accuracy: 68.4028%
+[13:47:13 2024] Average test accuracy: 66.4352%
 ```
-
-
 
 You can also modify the config yaml file to adjust parameter  or make your own models to do experiments. 

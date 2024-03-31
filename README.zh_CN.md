@@ -167,8 +167,17 @@ $ python .\main.py --dataset bci2a --model EEGNet
 它将使用[bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml)中的默认配置和默认的`within-subject`策略，当然你可以使用`--config`来指定。
 
 然后你可以在`./save`文件夹中获取输出的准确率和`result.log`：
-```shell
-
+```
+[13:41:23 2024] Subject1 test accuracy: 70.4861%
+[13:42:06 2024] Subject2 test accuracy: 57.9861%
+[13:42:50 2024] Subject3 test accuracy: 79.5139%
+[13:43:33 2024] Subject4 test accuracy: 60.0694%
+[13:44:16 2024] Subject5 test accuracy: 70.8333%
+[13:45:00 2024] Subject6 test accuracy: 59.3750%
+[13:45:46 2024] Subject7 test accuracy: 69.0972%
+[13:46:30 2024] Subject8 test accuracy: 62.1528%
+[13:47:13 2024] Subject9 test accuracy: 68.4028%
+[13:47:13 2024] Average test accuracy: 66.4352%
 ```
 
 你也可以修改配置的 yaml 文件来调整参数或制作你自己的模型来进行实验。
