@@ -7,7 +7,8 @@ processing(visualization & analysis), papers(research and summary), deep learnin
 
 The experiments in this repository are based on <a href="https://github.com/mne-tools/mne-python">MNE-Python</a>, 
 <a href="https://github.com/NeuroTechX/moabb">Moabb</a>,
-<a href="https://github.com/braindecode/braindecode">Braindecode</a>.
+<a href="https://github.com/braindecode/braindecode">Braindecode</a> and 
+<a href="https://github.com/skorch-dev/skorch">Skorch</a>.
 
 You can find more contents of this repository through the following sections:
 
@@ -169,7 +170,7 @@ optional arguments:
   --config CONFIG       config file name(.yaml format)
   --strategy {cross-subject,within-subject}
                         experiments strategy on subjects
-  --save                save the pytorch model and history
+  --save                save the pytorch model and history (follow skorch)
 ```
 
 If you run experiments on dataset [BCI 2a](#public-datasets) using `EEGNet` model, simply run:
@@ -181,7 +182,7 @@ $ python .\main.py --dataset bci2a --model EEGNet
 It will use the default config in [bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml) and 
 default `within-subject` strategy  , surely you can use `--config` to specify.
 
-Then you can get the output accuracy and `result.txt` in `./save` folder:
+Then you can get the output accuracy and `result.log` in `./save` folder:
 
 ```
 Subject1 test accuracy: 70.8333%
@@ -196,4 +197,6 @@ Subject9 test accuracy: 73.2639%
 Average test accuracy: 71.8364%
 ```
 
-You can also make your own models and more config options to do experiments. 
+
+
+You can also modify the config yaml file to adjust parameter  or make your own models to do experiments. 

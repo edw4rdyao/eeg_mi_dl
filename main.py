@@ -15,7 +15,7 @@ if __name__ == '__main__':
     parser.add_argument('--config', type=str, default='default', help='config file name(.yaml format)')
     parser.add_argument('--strategy', type=str, default='within-subject', choices=['cross-subject', 'within-subject'],
                         help='experiments strategy on subjects')
-    parser.add_argument('--save', action='store_true', help='save the pytorch model and history')
+    parser.add_argument('--save', action='store_true', help='save the pytorch model and history(follow skorch)')
     args = parser.parse_args()
     # suit default config for specific dataset and model
     if args.config == 'default':
@@ -25,8 +25,7 @@ if __name__ == '__main__':
     # result save directory
     save_dir = f"{os.getcwd()}\\save\\{int(time.time())}_{args.dataset}_{args.model}\\"
     args.save_dir = save_dir
-    logger = get_logger(save_result=True, save_dir=save_dir,
-                        save_file=f'{int(time.time())}_{args.dataset}_{args.model}_result.txt')
+    logger = get_logger(save_result=True, save_dir=save_dir, save_file='result.log')
     logger.info(config)
     # for every dataset
     if args.dataset == 'bci2a':

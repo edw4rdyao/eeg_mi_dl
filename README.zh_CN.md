@@ -7,8 +7,8 @@
 
 本仓库的实验基于 <a href="https://github.com/mne-tools/mne-python">MNE-Python</a>，
 <a href="https://github.com/NeuroTechX/moabb">Moabb</a>，
-<a href="https://github.com/braindecode/braindecode">Braindecode</a>。
-
+<a href="https://github.com/braindecode/braindecode">Braindecode</a>和
+<a href="https://github.com/skorch-dev/skorch">Skorch</a>。
 
 您可以通过以下部分找到此仓库的更多内容：
 
@@ -133,3 +133,42 @@
 更多示例见 [MNE-Python tutorials](https://mne.tools/stable/auto_tutorials/index.html)。
 
 ## 实验
+
+这个仓库基于`Python 3.8`，在运行这个仓库的实验之前，请先安装环境：
+
+```shell
+$ pip install -r requirements.txt
+```
+
+然后你可以使用`-h`来获取使用方法：
+```shell
+$ python .\main.py -h
+```
+```
+usage: main.py [-h] [--dataset {bci2a,physionet}] [--model {EEGNet,EEGConformer,ATCNet,EEGInception,EEGITNet}] [--config CONFIG] [--strategy {cross-subject,within-subject}] [--save]
+
+optional arguments:
+  -h, --help            show this help message and exit
+  --dataset {bci2a,physionet}
+                        data set used of the experiments
+  --model {EEGNet,EEGConformer,ATCNet,EEGInception,EEGITNet}
+                        model used of the experiments
+  --config CONFIG       config file name(.yaml format)
+  --strategy {cross-subject,within-subject}
+                        experiments strategy on subjects
+  --save                save the pytorch model and history (follow skorch)
+```
+
+如果你在数据集[BCI 2a](#公开数据集) 上运行`EEGNet`模型的实验，只需运行：
+```shell
+$ python .\main.py --dataset bci2a --model EEGNet
+```
+
+它将使用[bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml)中的默认配置和默认的`within-subject`策略，当然你可以使用`--config`来指定。
+
+然后你可以在`./save`文件夹中获取输出的准确率和`result.log`：
+```shell
+
+```
+
+你也可以修改配置的 yaml 文件来调整参数或制作你自己的模型来进行实验。

@@ -133,7 +133,6 @@ class BCI2aExperiment:
         subjects_windows_dataset = self.windows_dataset.split('subject')
         n_subjects = len(subjects_windows_dataset.items())
         avg_accuracy = 0
-        result = ''
         for subject, windows_dataset in subjects_windows_dataset.items():
             # evaluate the model by test accuracy for "Hold-Out" strategy
             train_dataset = windows_dataset.split('session')['0train']
