@@ -2,7 +2,7 @@ import argparse
 import os
 import time
 
-from experiments.bci2a import BCI2aExperiment
+from experiments import BCI2aExperiment, PhysionetExperiment
 from utils import read_yaml, get_logger
 
 if __name__ == '__main__':
@@ -32,5 +32,5 @@ if __name__ == '__main__':
         exp = BCI2aExperiment(args=args, config=config, logger=logger)
         exp.run()
     elif args.dataset == 'physionet':
-        raise Warning('physionet experiments are developing.')
-        # physionet(args, config)
+        exp = PhysionetExperiment(args=args, config=config, logger=logger)
+        exp.run()

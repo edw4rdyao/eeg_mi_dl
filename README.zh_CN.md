@@ -25,71 +25,45 @@
 
 ### 论文整理
 
-<details>
-<summary>
+
 2017 Schirrmeister et al.
 <u><i>Deep learning with convolutional neural networks for EEG decoding and visualization</i></u>
 [<a href="https://onlinelibrary.wiley.com/doi/10.1002/hbm.23730"><b>论文链接</b></a>]
 [<a href="https://github.com/robintibor/braindecode"><b>开源代码</b></a>]
 [<a href="https://github.com/robintibor/braindecode"><b>复现代码</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2018 Lawhern et al.
 <u><i>EEGNet: a compact convolutional neural network for EEG-based brain–computer interfaces</i></u>
 [<a href="https://iopscience.iop.org/article/10.1088/1741-2552/aace8c"><b>论文链接</b></a>]
 [<a href="https://github.com/vlawhern/arl-eegmodels"><b>开源代码</b></a>]
 [<a href="https://github.com/braindecode/braindecode/tree/master/braindecode/models"><b>复现代码1</b></a>]
 [<a href="https://colab.research.google.com/drive/1ANF8PwvtUPawTeQt4Uu4iwscpyhHBgvM"><b>复现代码2</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2018 Sakhavi et al.
 <u><i>Learning Temporal Information for Brain-Computer Interface Using Convolutional Neural Networks</i></u>
 [<a href="https://ieeexplore.ieee.org/document/8310961"><b>论文链接</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2019 Dose et al.
 <u><i>An end-to-end deep learning approach to MI-EEG signal classification for BCIs</i></u>
 [<a href="https://www.sciencedirect.com/science/article/abs/pii/S0957417418305359"><b>论文链接</b></a>]
 [<a href="https://github.com/hauke-d/cnn-eeg"><b>开源代码</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2020 Wang et al.
 <u><i>An Accurate EEGNet-based Motor-Imagery Brain Computer Interface for Low-Power Edge Computing</i></u>
 [<a href="https://ieeexplore.ieee.org/document/9137134"><b>论文链接</b></a>]
 [<a href="https://github.com/MHersche/eegnet-based-embedded-bci"><b>开源代码</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2020 Ingolfsson et al.
 <u><i>EEG-TCNet: An Accurate Temporal Convolutional Network for Embedded Motor-Imagery Brain-Machine Interfaces</i></u>
 [<a href="https://ieeexplore.ieee.org/document/9283028"><b>论文链接</b></a>]
 [<a href="https://github.com/iis-eth-zurich/eeg-tcnet"><b>开源代码</b></a>]
 [<a href="https://github.com/okbalefthanded/eeg-tcnet/blob/master/eeg_tcnet_colab.ipynb"><b>复现代码1</b></a>]
-</summary>
-</details>
 
-<details>
-<summary>
 2021 Mane et al.
 <u><i>A Multi-view CNN with Novel Variance Layer for Motor Imagery Brain Computer Interface</i></u>
 [<a href="https://ieeexplore.ieee.org/document/9175874"><b>论文链接</b></a>]
 [<a href="https://github.com/ravikiran-mane/FBCNet"><b>开源代码</b></a>]
-</summary>
-</details>
+
 
 ### 公开数据集
 
@@ -97,7 +71,7 @@
 
 - BCI IV 2a([BCI Competition IV](https://www.bbci.de/competition/iv/))
 
-数据集描述: [BCI Competition 2008 – Graz data set A](https://www.bbci.de/competition/iv/desc_2a.pdf)
+数据集描述: [BCI Competition 2008 – Graz data set A](https://www.bbci.de/competition/iv/desc_2a.pdf) 4类
 
 下载链接: [.gdf 格式](https://www.bbci.de/competition/iv/#dataset2a)
 或者 [.mat 格式](http://bnci-horizon-2020.eu/database/data-sets)
@@ -106,7 +80,7 @@
 
 - Physionet([Physionet Dataset](https://physionet.org/content/eegmmidb/1.0.0/))
 
-数据集描述:[Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/)
+数据集描述:[Physionet Database EEG Motor Movement/Imagery Dataset](https://physionet.org/content/eegmmidb/1.0.0/) 2/3/4类
 
 下载链接: [.edf 格式](https://physionet.org/content/eegmmidb/1.0.0/)
 
@@ -134,7 +108,7 @@
 
 ## 实验
 
-这个仓库基于`Python 3.8`，在运行这个仓库的实验之前，请先安装环境：
+这个仓库基于`Python 3.10`，在运行这个仓库的实验之前，请先安装环境：
 
 ```shell
 $ pip install -r requirements.txt
@@ -159,25 +133,29 @@ optional arguments:
   --save                save the pytorch model and history (follow skorch)
 ```
 
-如果你在数据集[BCI 2a](#公开数据集) 上运行`EEGNet`模型的实验，只需运行：
+如果你在数据集`BCI 2a`上运行`EEGNet`模型的实验，只需运行：
 ```shell
 $ python .\main.py --dataset bci2a --model EEGNet
 ```
 
-它将使用[bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml)中的默认配置和默认的`within-subject`策略，当然你可以使用`--config`来指定。
-
-然后你可以在`./save`文件夹中获取输出的准确率和`result.log`：
+它将使用[bci2a_EEGNet_default.yaml](./config/bci2a_EEGNet_default.yaml)中的默认配置和默认的`within-subject`策略，当然你可以使用`--config`来指定，然后你可以在`./save`文件夹中获取输出的准确率和`result.log`：
 ```
-[13:41:23 2024] Subject1 test accuracy: 70.4861%
-[13:42:06 2024] Subject2 test accuracy: 57.9861%
-[13:42:50 2024] Subject3 test accuracy: 79.5139%
-[13:43:33 2024] Subject4 test accuracy: 60.0694%
-[13:44:16 2024] Subject5 test accuracy: 70.8333%
-[13:45:00 2024] Subject6 test accuracy: 59.3750%
-[13:45:46 2024] Subject7 test accuracy: 69.0972%
-[13:46:30 2024] Subject8 test accuracy: 62.1528%
-[13:47:13 2024] Subject9 test accuracy: 68.4028%
-[13:47:13 2024] Average test accuracy: 66.4352%
+[2024-07-30 17:30:51] Subject1 test accuracy: 70.4861%
+[2024-07-30 17:32:17] Subject2 test accuracy: 53.8194%
+[2024-07-30 17:33:40] Subject3 test accuracy: 79.1667%
+[2024-07-30 17:35:02] Subject4 test accuracy: 62.8472%
+[2024-07-30 17:36:24] Subject5 test accuracy: 68.4028%
+[2024-07-30 17:39:13] Subject6 test accuracy: 50.6944%
+[2024-07-30 17:40:35] Subject7 test accuracy: 72.2222%
+[2024-07-30 17:42:00] Subject8 test accuracy: 64.5833%
+[2024-07-30 17:43:23] Subject9 test accuracy: 70.1389%
+[2024-07-30 17:43:23] Average test accuracy: 65.8179%
 ```
 
-你也可以修改配置的 yaml 文件来调整参数或制作你自己的模型来进行实验。
+如果你在数据集 `Physionet`数据集上运行实验, 请使用`cross-subject`跨被试策略:
+
+```shell
+python .\main.py --dataset physionet --model EEGNet --strategy cross-subject
+```
+
+你也可以修改配置的 yaml 文件来调整参数或搭建你自己的模型来进行实验。

@@ -1,5 +1,6 @@
 import torch
 from braindecode.models import EEGNetv4, EEGConformer, ATCNet, EEGITNet, EEGInception
+from braindecode.util import set_random_seeds
 from skorch import NeuralNetClassifier
 from skorch.callbacks import LRScheduler, TrainEndCheckpoint
 from skorch.helper import SliceDataset
@@ -10,6 +11,7 @@ from nn_models import cuda
 
 class BCI2aExperiment:
     def __init__(self, args, config, logger):
+        set_random_seeds(seed=config['fit']['seed'], cuda=cuda)
         # load and preprocess data using braindecode
         self.ds = dataset_loader.DatasetFromBraindecode('bci2a', subject_ids=None)
         self.ds.preprocess(resample_freq=config['dataset']['resample'],
@@ -43,88 +45,93 @@ class BCI2aExperiment:
         # NeuralNetClassifier is following skorch https://skorch.readthedocs.io/en/stable/user/neuralnet.html
         callbacks = [("lr_scheduler", LRScheduler('CosineAnnealingLR', T_max=self.n_epochs - 1))]
         if self.model_name == 'EEGNet':
-            return NeuralNetClassifier(module=EEGNetv4,
-                                       module__n_chans=self.n_channels,
-                                       module__n_outputs=self.n_classes,
-                                       module__n_times=self.n_times,
-                                       module__kernel_length=32,
-                                       module__drop_prob=0.5,
-                                       criterion=torch.nn.CrossEntropyLoss,
-                                       optimizer=torch.optim.Adam,
-                                       optimizer__lr=self.lr,
-                                       train_split=None,
-                                       iterator_train__shuffle=True,
-                                       batch_size=self.batch_size,
-                                       callbacks=callbacks,
-                                       device='cuda' if cuda else 'cpu',
-                                       verbose=self.verbose
-                                       )
+            return NeuralNetClassifier(
+                module=EEGNetv4,
+                module__n_chans=self.n_channels,
+                module__n_outputs=self.n_classes,
+                module__n_times=self.n_times,
+                module__kernel_length=32,
+                module__drop_prob=0.5,
+                criterion=torch.nn.CrossEntropyLoss,
+                optimizer=torch.optim.Adam,
+                optimizer__lr=self.lr,
+                train_split=None,
+                iterator_train__shuffle=True,
+                batch_size=self.batch_size,
+                callbacks=callbacks,
+                device='cuda' if cuda else 'cpu',
+                verbose=self.verbose
+            )
         elif self.model_name == 'EEGConformer':
-            return NeuralNetClassifier(module=EEGConformer,
-                                       module__n_chans=self.n_channels,
-                                       module__n_outputs=self.n_classes,
-                                       module__n_times=self.n_times,
-                                       module__final_fc_length='auto',
-                                       module__add_log_softmax=False,
-                                       criterion=torch.nn.CrossEntropyLoss,
-                                       optimizer=torch.optim.Adam,
-                                       optimizer__betas=(0.5, 0.999),
-                                       optimizer__lr=self.lr,
-                                       train_split=None,
-                                       iterator_train__shuffle=True,
-                                       batch_size=self.batch_size,
-                                       callbacks=callbacks,
-                                       device='cuda' if cuda else 'cpu',
-                                       verbose=self.verbose
-                                       )
+            return NeuralNetClassifier(
+                module=EEGConformer,
+                module__n_chans=self.n_channels,
+                module__n_outputs=self.n_classes,
+                module__n_times=self.n_times,
+                module__final_fc_length='auto',
+                module__add_log_softmax=False,
+                criterion=torch.nn.CrossEntropyLoss,
+                optimizer=torch.optim.Adam,
+                optimizer__betas=(0.5, 0.999),
+                optimizer__lr=self.lr,
+                train_split=None,
+                iterator_train__shuffle=True,
+                batch_size=self.batch_size,
+                callbacks=callbacks,
+                device='cuda' if cuda else 'cpu',
+                verbose=self.verbose
+            )
         elif self.model_name == 'ATCNet':
-            return NeuralNetClassifier(module=ATCNet,
-                                       module__n_chans=self.n_channels,
-                                       module__n_outputs=self.n_classes,
-                                       module__n_times=self.n_times,
-                                       module__add_log_softmax=False,
-                                       criterion=torch.nn.CrossEntropyLoss,
-                                       optimizer=torch.optim.Adam,
-                                       optimizer__lr=self.lr,
-                                       train_split=None,
-                                       iterator_train__shuffle=True,
-                                       batch_size=self.batch_size,
-                                       callbacks=callbacks,
-                                       device='cuda' if cuda else 'cpu',
-                                       verbose=self.verbose
-                                       )
+            return NeuralNetClassifier(
+                module=ATCNet,
+                module__n_chans=self.n_channels,
+                module__n_outputs=self.n_classes,
+                module__n_times=self.n_times,
+                module__add_log_softmax=False,
+                criterion=torch.nn.CrossEntropyLoss,
+                optimizer=torch.optim.Adam,
+                optimizer__lr=self.lr,
+                train_split=None,
+                iterator_train__shuffle=True,
+                batch_size=self.batch_size,
+                callbacks=callbacks,
+                device='cuda' if cuda else 'cpu',
+                verbose=self.verbose
+            )
         elif self.model_name == 'EEGITNet':
-            return NeuralNetClassifier(module=EEGITNet,
-                                       module__n_chans=self.n_channels,
-                                       module__n_outputs=self.n_classes,
-                                       module__n_times=self.n_times,
-                                       module__add_log_softmax=False,
-                                       criterion=torch.nn.CrossEntropyLoss,
-                                       optimizer=torch.optim.Adam,
-                                       optimizer__lr=self.lr,
-                                       train_split=None,
-                                       iterator_train__shuffle=True,
-                                       batch_size=self.batch_size,
-                                       callbacks=callbacks,
-                                       device='cuda' if cuda else 'cpu',
-                                       verbose=self.verbose
-                                       )
+            return NeuralNetClassifier(
+                module=EEGITNet,
+                module__n_chans=self.n_channels,
+                module__n_outputs=self.n_classes,
+                module__n_times=self.n_times,
+                module__add_log_softmax=False,
+                criterion=torch.nn.CrossEntropyLoss,
+                optimizer=torch.optim.Adam,
+                optimizer__lr=self.lr,
+                train_split=None,
+                iterator_train__shuffle=True,
+                batch_size=self.batch_size,
+                callbacks=callbacks,
+                device='cuda' if cuda else 'cpu',
+                verbose=self.verbose
+            )
         elif self.model_name == 'EEGInception':
-            return NeuralNetClassifier(module=EEGInception,
-                                       module__n_chans=self.n_channels,
-                                       module__n_outputs=self.n_classes,
-                                       module__n_times=self.n_times,
-                                       module__add_log_softmax=False,
-                                       criterion=torch.nn.CrossEntropyLoss,
-                                       optimizer=torch.optim.Adam,
-                                       optimizer__lr=self.lr,
-                                       train_split=None,
-                                       iterator_train__shuffle=True,
-                                       batch_size=self.batch_size,
-                                       callbacks=callbacks,
-                                       device='cuda' if cuda else 'cpu',
-                                       verbose=self.verbose
-                                       )
+            return NeuralNetClassifier(
+                module=EEGInception,
+                module__n_chans=self.n_channels,
+                module__n_outputs=self.n_classes,
+                module__n_times=self.n_times,
+                module__add_log_softmax=False,
+                criterion=torch.nn.CrossEntropyLoss,
+                optimizer=torch.optim.Adam,
+                optimizer__lr=self.lr,
+                train_split=None,
+                iterator_train__shuffle=True,
+                batch_size=self.batch_size,
+                callbacks=callbacks,
+                device='cuda' if cuda else 'cpu',
+                verbose=self.verbose
+            )
         else:
             raise ValueError(f"model {self.model_name} is not supported on this dataset.")
 

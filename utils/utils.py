@@ -49,7 +49,7 @@ def init_weight_bias(model):
 def get_logger(save_result, save_dir, save_file):
     logger = logging.getLogger()
     logger.setLevel(logging.INFO)
-    formatter = logging.Formatter(fmt="[%(asctime)s] %(message)s", datefmt="%H:%M:%S %Y")
+    formatter = logging.Formatter(fmt="[%(asctime)s] %(message)s", datefmt="%Y-%m-%d %H:%M:%S")
 
     str_handler = logging.StreamHandler()
     str_handler.setFormatter(formatter)

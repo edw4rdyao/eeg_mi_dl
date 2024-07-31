@@ -7,6 +7,7 @@ dataset:
   start_offset: -0.5
   stop_offset: 0
 fit:
+  seed: 42
   verbose: 0
   epochs: 750
   lr: 0.0009

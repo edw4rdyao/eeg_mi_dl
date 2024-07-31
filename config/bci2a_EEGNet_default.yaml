@@ -1,3 +1,4 @@
+# dataset preprocess
 dataset:
   resample: ~
   high_freq: ~
@@ -6,8 +7,10 @@ dataset:
   channels: ~
   start_offset: -0.5
   stop_offset: 0
+# fit hyperparameters
 fit:
+  seed: 42
   verbose: 0
-  epochs: 600
+  epochs: 500
   lr: 0.001
   batch_size: 64
