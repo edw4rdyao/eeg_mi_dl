@@ -21,9 +21,9 @@ if __name__ == '__main__':
     if args.config == 'default':
         args.config = f'{args.dataset}_{args.model}_{args.config}.yaml'
     # read config from yaml file
-    config = read_yaml(f"{os.getcwd()}\\config\\{args.config}")
+    config = read_yaml(f"{os.getcwd()}/config/{args.config}")
     # result save directory
-    save_dir = f"{os.getcwd()}\\save\\{int(time.time())}_{args.dataset}_{args.model}\\"
+    save_dir = f"{os.getcwd()}/save/{int(time.time())}_{args.dataset}_{args.model}/"
     args.save_dir = save_dir
     logger = get_logger(save_result=True, save_dir=save_dir, save_file='result.log')
     logger.info(config)

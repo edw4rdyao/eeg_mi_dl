@@ -151,7 +151,7 @@ class BCI2aExperiment:
             clf = self.__get_classifier()
             # save the last epoch model for test
             if self.save:
-                clf.callbacks.append(TrainEndCheckpoint(dirname=self.save_dir + f'\\S{subject}'))
+                clf.callbacks.append(TrainEndCheckpoint(dirname=self.save_dir + f'/S{subject}'))
             clf.fit(train_X, y=train_y, epochs=self.n_epochs)
             # calculate test accuracy for subject
             test_accuracy = clf.score(test_X, y=test_y)
